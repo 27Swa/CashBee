@@ -16,17 +16,6 @@ CashBee is an all-in-one mobile wallet for seamless money transfers, bill paymen
 | **Transaction History** | View payment and collection history |
 | **Family Wallet** | Manage family wallet accounts |
 
-```mermaid
-flowchart TD
-    A[Register/Login] --> B["Wallet Home"]
-    B --> C["Pay (QR / Phone)"]
-    B --> D["Bill Payment"]
-    B --> E[Family Wallet]
-    B --> F[Donation]
-    B --> G[Transaction Limits]
-    B --> H["Transaction History"]
-    B --> I["Collect Money"]
-```
 ## Architecture
 It is designed using a layered architecture to ensure scalability, security, and ease of maintenance.  
 1. **Frontend (Mobile Application):** Flutter  
@@ -79,24 +68,130 @@ flowchart TD
    - Parents/Guardians register and create a main account
    - Children get sub-accounts with parental-controlled access
    - Role-based permissions determine what each user can access
+```mermaid
+flowchart TD
+    A[Parent Registers/Logs In] --> B[Parent Dashboard]
+    B --> C[Add Family Member]
+    C --> E[Child Account Created]
+    E --> G[Child Logs In]
+```
 
 2. **Transaction Limits Configuration**
    - Parents set spending limits for each child individually
    - Establish family-wide transaction limits
    - Customize limits by transaction type (payments, donations, etc.)
+```mermaid
+flowchart TD
+    Start[Limit Configuration] --> SelectUser[Select Family Member]
+    SelectUser --> CheckRole{User Role?}
+    
+    %% Parent Flow
+    CheckRole -->|Parent/Guardian| ParentChoice{Set Own Transaction Limit?}
+    
+    ParentChoice -->|Yes| SetParentLimit[Set Parent Transaction Limit]
+    ParentChoice -->|No| SkipParent[Skip Setting Parent Limit]
+    
+    SetParentLimit --> CheckChildren{Are Children Registered?}
+    SkipParent --> CheckChildren
+    
+    CheckChildren -->|Yes| SetChildrenLimits[Set Limits for Children]
+    CheckChildren -->|No| CheckAnyLimit{Any Limits Set?}
+    
+    SetChildrenLimits --> CheckAnyLimit
+    
+    CheckAnyLimit -->|Yes| SaveLimits[Save Limit Settings]
+    CheckAnyLimit -->|No| ShowExisting[Show Existing Limits]
+    
+    SaveLimits --> Confirm[Confirm Configuration]
+    Confirm --> Apply["Apply to Selected User(s)"]
+    Apply --> End[Limits Activated]
+    
+    ShowExisting --> End
+    
+    %% Child Flow (for direct child login if needed)
+    CheckRole -->|Child| SetIndividual[View/Use Assigned Limits]
+    SetIndividual --> End
+```
 
 3. **Financial Operations**
    - Direct Payments: Send money to contacts via QR code or phone number
    - Bill Payments: Utilities (electricity, water, gas) payment facility
    - Donations: Support approved charitable organizations
    - Money Collection: Request and receive funds from family members or contacts
+    ```mermaid
+    flowchart TD
+    Start[Financial Operations] --> ChooseType[Choose Transaction Type]
+    
+    ChooseType --> Payment[Direct Payment]
+    ChooseType --> BillPay[Bill Payment]
+    ChooseType --> Donation[Donation]
+    ChooseType --> MoneyCollect[Money Collection]
+    
+    Payment --> EnterDetails[Enter Payment Details]
+    BillPay --> SelectBiller[Select Biller Company]
+    Donation --> ChooseCharity[Choose Charity]
+    MoneyCollect --> CreateRequest[Create Collection Request]
+    
+    EnterDetails --> ConfirmPayment[Confirm Payment]
+    SelectBiller --> ConfirmBill[Confirm Bill Payment]
+    ChooseCharity --> ConfirmDonation[Confirm Donation]
+    CreateRequest --> SendRequest[Send Request]
+    
+    ConfirmPayment --> ProcessPayment[Process Transaction]
+    ConfirmBill --> ProcessPayment
+    ConfirmDonation --> ProcessPayment
+    SendRequest --> WaitResponse[Wait for Response]
+    
+    ProcessPayment --> UpdateHistory[Update Transaction History]
+    WaitResponse --> UpdateHistory
+    
+    UpdateHistory --> Notify[Send Notification]
+    Notify --> ReturnHome[Return to Home]
+    ```
 
 4. **Transaction Monitoring & History**
    - All transactions are logged with detailed information
    - Filterable view by: child, date, transaction type, or amount
    - Real-time notifications for all financial activities
-
+```mermaid
+flowchart TD
+    A[User Selects 'History'] --> B{User Type?}
+    B -- Parent --> C[View All Family Transactions]
+    B -- Child --> D[View Own Transactions Only]
+    C --> E[Filter by: Child, Date, Type]
+    D --> F[Filter by: Date, Type]
+    E --> G[Display Results]
+    F --> G
+    G --> H[Return to Home]
+```
 5. **Family Management**
    - Parents can add/remove family members
    - Customizable permissions for each family member
    - Centralized oversight of all family financial activities
+```mermaid
+flowchart TD
+    Start[Family Management] --> AccessDashboard[Access Parent Dashboard]
+    AccessDashboard --> ChooseAction[Choose Management Action]
+    
+    ChooseAction --> AddMember[Add Family Member]
+    ChooseAction --> RemoveMember[Remove Family Member]
+    ChooseAction --> ModifyPermissions[Modify Permissions]
+    
+    AddMember --> EnterDetails[Enter Member Details]
+    EnterDetails --> SetInitialPerms[Set Initial Permissions]
+    SetInitialPerms --> ConfirmAdd[Confirm Addition]
+    
+    RemoveMember --> SelectMember[Select Member to Remove]
+    SelectMember --> ConfirmRemove[Confirm Removal]
+    
+    ModifyPermissions --> ChooseMember[Choose Family Member]
+    ChooseMember --> AdjustPermissions[Adjust Permission Settings]
+    AdjustPermissions --> SaveChanges[Save Changes]
+    
+    ConfirmAdd --> UpdateSystem[Update System Records]
+    ConfirmRemove --> UpdateSystem
+    SaveChanges --> UpdateSystem
+    
+    UpdateSystem --> SendNotification[Send Notification to Affected Users]
+    SendNotification --> ReturnDash[Return to Dashboard]
+```
