@@ -1,0 +1,175 @@
+{
+    "users": [
+        {
+            "name": "Sondos Wael",
+            "phone_number": "01009710356",
+            "national_id": "20305270101062",
+            "password": "So@1234567",
+            "role": "Parent",
+            "walletid": 1,
+            "family_wallet_id": 1,
+            "failed_attempts": 0,
+            "lock_until": null
+        },
+        {
+            "name": "Deeee Deeee",
+            "phone_number": "01009710536",
+            "national_id": "30305270101063",
+            "password": "So@1234567",
+            "role": "User",
+            "walletid": 8,
+            "family_wallet_id": -1,
+            "failed_attempts": 0,
+            "lock_until": null
+        },
+        {
+            "name": "Mohamed Wael",
+            "phone_number": "01009710666",
+            "national_id": "31305270101065",
+            "password": "So@1234567",
+            "role": "Child",
+            "walletid": 1,
+            "family_wallet_id": -1,
+            "failed_attempts": 0,
+            "lock_until": null
+        },
+        {
+            "name": "Mazen Wael",
+            "phone_number": "01009710555",
+            "national_id": "31306160101033",
+            "password": "So@1234567",
+            "role": "Child",
+            "walletid": 2,
+            "family_wallet_id": 1,
+            "failed_attempts": 0,
+            "lock_until": null
+        }
+    ],
+    "wallets": [
+        {
+            "wallet_id": 1,
+            "balance": 100.0,
+            "transaction_limit": 500,
+            "max_limit": 315000,
+            "transactions": [
+                {
+                    "transaction_id": 1,
+                    "user_id": null,
+                    "amount": 100.0,
+                    "t_type": "Receive",
+                    "date": "2025-09-10T02:35:09.979197",
+                    "to": "01009710536"
+                }
+            ]
+        },
+        {
+            "wallet_id": 8,
+            "balance": 0,
+            "transaction_limit": 500,
+            "max_limit": 315000,
+            "transactions": []
+        },
+        {
+            "wallet_id": 1,
+            "balance": 0,
+            "transaction_limit": 500,
+            "max_limit": 315000,
+            "transactions": []
+        },
+        {
+            "wallet_id": 2,
+            "balance": 0,
+            "transaction_limit": 500,
+            "max_limit": 315000,
+            "transactions": []
+        }
+    ],
+    "family_wallets": [
+        {
+            "family_id": 1,
+            "parent_phone": "01009710356",
+            "members": {
+                "30305270101063": {
+                    "user": "Deeee Deeee",
+                    "limit": 1000.0,
+                    "wallet": 8,
+                    "password": 123456,
+                    "added_date": "2025-09-10T03:21:24.751457"
+                },
+                "31306160101033": {
+                    "user": "Mazen Wael",
+                    "limit": 500.0,
+                    "wallet": 2,
+                    "password": 123456,
+                    "added_date": "2025-09-10T06:50:58.146469",
+                    "phone": "01009710555"
+                }
+            },
+            "created_date": "2025-09-10T03:20:59.279646"
+        }
+    ],
+    "organizations": [],
+    "transactions": [
+        {
+            "transaction_id": 1,
+            "user_id": 1,
+            "amount": 200,
+            "t_type": "SEND",
+            "date": 1,
+            "to": "Ahmed"
+        },
+        {
+            "transaction_id": 1,
+            "user_id": 1,
+            "amount": 200,
+            "t_type": "SEND",
+            "date": 1,
+            "to": "Ahmed"
+        },
+        {
+            "transaction_id": 1,
+            "user_id": 1,
+            "amount": 200,
+            "t_type": "SEND",
+            "date": 1,
+            "to": "Ahmed"
+        },
+        {
+            "transaction_id": 1,
+            "user_id": 1,
+            "amount": 200,
+            "t_type": "SEND",
+            "date": 1,
+            "to": "Ahmed"
+        },
+        {
+            "transaction_id": 1,
+            "user_id": 1,
+            "amount": 200,
+            "t_type": "SEND",
+            "date": "123",
+            "to": "Ahmed"
+        },
+        {
+            "transaction_id": 1,
+            "user_id": 1,
+            "amount": 200,
+            "t_type": "SEND",
+            "date": "123",
+            "to": "Ahmed"
+        },
+        {
+            "transaction_id": 1,
+            "user_id": 1,
+            "amount": 200,
+            "t_type": "SEND",
+            "date": "123",
+            "to": "Ahmed"
+        }
+    ],
+    "counters": {
+        "transaction_id": 0,
+        "wallet_id": 2,
+        "family_wallet_id": 0
+    }
+}
