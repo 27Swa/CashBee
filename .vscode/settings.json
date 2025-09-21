@@ -1,0 +1,19 @@
+{
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "PG",
+            "database": "cashbee",
+            "username": "postgres",
+            "password": "So@1234",
+            "connectionTimeout": 50
+        }
+    ],
+    "python.analysis.extraPaths": [
+        "./DB handling"
+    ]
+}
