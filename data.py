@@ -87,7 +87,7 @@ class Family:
     """Contains the information about the 
     family wallet which are: family_id, parent_id, members_id"""
     def __init__(self,name, fid=None):
-        self._family_id = fid
+        self._family_id:int = fid
         self.name = name
     @property
     def family_id(self):

@@ -4,6 +4,7 @@ from Validations import AgeCalculation, ValidationCheck
 from data import Wallet
 from enums import Role
 from mappers import *
+from pay import WalletRepresentation
 from person import User, UserSession
 from postgres import QueryHandling
 
@@ -94,40 +95,27 @@ class RoleManager:
     @staticmethod
     def change_user_role(user: User, new_role: Role, db) -> str:
         """Change user role with validation"""
+        new_role = new_role.value
+        if new_role == user.role:
+            return " You Already have this role !!!"
         if new_role == Role.PARENT:
             can_change, message = RoleManager.can_change_to_parent(user)
             if not can_change:
                 return f"❌ Cannot change to parent: {message}"
-        
         # Update user role
         user._role = new_role
-        
-        update_query = """
-            UPDATE User_
-            SET role_ = %s
-            WHERE phone_number = %s
-            """
-        db.execute(update_query, values =(new_role.value, user.phone_number))
-        return f"✅ Role changed to {new_role.value} successfully"
+        QueryHandling.update_data('User_',['role_'],'phone_number = %s',(new_role, user.phone_number))
+        return f"✅ Role changed to {new_role} successfully"
 
 class UserHandling:
     @staticmethod
-    def get_user_info(id,db):
-        query_user = "SELECT * FROM User_ WHERE national_id = %s"
-        user:User = db.execute(query_user, UserMapper, (id,))  # هيرجع list of tuples
+    def get_user_info(user):
         if not user:
-            raise ValueError("User not found")
-        
-        query_wallet = "SELECT * FROM Wallet WHERE wallet_id = %s"
-        wallet:Wallet =  db.execute(query_wallet, WalletMapper, (user.wallet,))
-
+            return "❌ User not found"     
         res = f"Name: {user.name}\n"
         res += f"Role: {user.role}\n"
         res += f"Phone number: {user.phone_number}\n"
-        res += f"Balance: {wallet.balance}\n"
-        res += f"Money spent: {wallet.money}\n"
-        res += f"Transaction Limit: {wallet.transaction_limit}\n"
-        res += f"Max transaction Limit: {wallet.max_transaction_limit}\n"
+        res += WalletRepresentation.display(user.wallet)
         return res
     @staticmethod
     def get_user_transactions(user):
@@ -147,129 +135,102 @@ class UserHandling:
 
         return res
 
-class FamilyWalletFacade:
+class FamilyFacade:
 
-    def __init__(self, family_wallet: Family,db_handler,p):
-        self.family_wallet = family_wallet
-        self.db = db_handler
-        self.parent:User = p._current_user
+    def __init__(self,p):
+        self.family = None
+        self.user:User = p._current_user
+        self.family_members = []
     
-    def create_child_account(self, child_phone, child_national_id, child_name, child_password,maxlimit):
+    def create_family(self,fname):
+            self.family = Family(fname)
+            cols = ["family_name"]
+            self.family.family_id = QueryHandling.add_data("Family_",cols,self.family,FamilyMapper,"family_id")
+            print(f'{self.family.family_id}::: {type(self.family.family_id)}')
+
+            # Update user record with family wallet ID
+            self.user.family_id = self.family.family_id
+            col = ["family_id"]
+            data = (self.user.family_id, self.user.phone_number)
+            QueryHandling.update_data('User_',col,'phone_number = %s',data)  
+
+            return "Family wallet created successfully!"
+
+    def create_child_account(self, user:User,maxlimit):
         """Create child account 
         with child-specific validation"""
-        # Validate parent role
-        if  self.parent.role != Role.PARENT:
-            return "❌ Only parents can create child accounts"
-        
+
         # Check if child already exists
-        query_user = "SELECT * FROM User_ WHERE national_id = %s"
-        user:User = self.db.execute(query_user, UserMapper, (child_national_id,))  # هيرجع list of tuples        
-        if user:
+        user1 = QueryHandling.retrieve_data("User_",UserMapper,"","national_id = %s", (user.national_id,))      
+        if user1:
             return "❌ Child account already exists"
         
         # Check validations
-        vc = ValidationCheck(phone=child_phone,national_id=child_national_id,name=child_name,password=child_password,child=True)
+        vc = ValidationCheck(phone=user.phone_number,national_id=user.national_id,name=user.name,password=user.password,child=True)
         msg = vc.check()
         if msg:
             return msg
         
-        # Create wallet for child
-        child_wallet = Wallet(self.db)
-        child_wallet.max_transaction_limit = maxlimit
-
-       # INSERT wallet without wallet_id (generated automatically)
-        query_wallet = "INSERT INTO wallets (balance, max_limit) VALUES (%s,%s)"
-        self.db.execute(query_wallet, values=(child_wallet.balance,child_wallet.max_transaction_limit))
-        
-        # Get generated wallet_id
-        self.cursor.execute("SELECT LASTVAL()")
-        child_wallet.wallet_id = self.cursor.fetchone()[0]
-        
-        # 2️⃣ Create child user and link wallet
-        child_user = User(phone=child_phone,
-                        uid=child_national_id, 
-                        name=child_name,
-                        password=child_password,
-                        role=Role.CHILD.value, 
-                        family_id=self.parent.family_id,
-                        wallet=child_wallet.wallet_id)
-        
-        # INSERT user
-        query_user = """
-        INSERT INTO users (phone_number, national_id, name_, password_, role_, family_id, wallet_id)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """
-        values_user = (
-            child_user.phone_number,
-            child_user.national_id,
-            child_user.name,
-            child_user.password,
-            child_user.role,
-            child_user.family_id,
-            child_user.wallet
-        )
-        self.db.execute(query_user, values=values_user)
-        return f"✅ Child account created successfully for {child_name}"
+        wallet = Wallet(balance=0,max_limit=maxlimit)
+        # adding data into the database
+        cols = ["balance",'transaction_limit','max_limit']
+        wallet.wallet_id = QueryHandling.add_data("Wallet",cols,wallet,WalletMapper,"wallet_id")
     
-    def get_member_info(self, id):
-        if id not in self.family_wallet.members:
-            print(self.family_wallet.members)
-            return "❌ Member not found"
-        return UserHandling.get_user_info(id,self.db)
-    def set_max_limit(self, child_id, new_limit, fid):
-        query_user = "SELECT * FROM users WHERE national_id = %s and family_id = %s"
-        row_user = self.db.execute(query_user, values=(child_id,fid))
-        if not row_user:
+        user.wallet = wallet.wallet_id
+        user.family_id = self.user.family_id
+        cols = ["phone_number",'national_id','name_','password_','role_','family_id','wallet_id']
+        user_add = QueryHandling.add_data("User_",cols,user,UserMapper)
+        self.family_members.append(user.phone_number)   
+        return f"✅ Child account created successfully for {user.name}"
+    
+    def get_member_info(self, phone):
+        user:User = QueryHandling.retrieve_data("User_",UserMapper,"","phone_number = %s and family_id = %s", (phone,self.user.family_id))       
+        return UserHandling.get_user_info(user)
+    
+    def set_max_limit(self, phone_number, new_limit):
+        user:User = QueryHandling.retrieve_data("User_",UserMapper,"","phone_number = %s and family_id = %s", (phone_number,self.user.family_id))       
+        if not user:
             return "❌ User not found"
 
-        user_dict = dict(zip([desc[0] for desc in self.db.cursor.description], row_user))
-        user: User = UserMapper.from_dict(user_dict)
-
-        query_wallet = "SELECT * FROM wallets WHERE wallet_id = %s"
-        row_wallet = self.db.execute(query_wallet, values=(user.wallet,))
-        if not row_wallet:
-            return "❌ Wallet not found"
+        col = ["max_limit" ]
+        data = (new_limit, user.wallet)
+        QueryHandling.update_data('Wallet',col,'wallet_id = %s',data)  
         
-        wallet_dict = dict(zip([desc[0] for desc in self.db.cursor.description], row_wallet))
-        wallet: Wallet = WalletMapper.from_dict(wallet_dict)
-     
-      
-        wallet.max_transaction_limit = new_limit
-
-        query_update = "UPDATE wallets SET max_transaction_limit = %s WHERE wallet_id = %s"
-        self.db.execute(query_update, values=(wallet.max_transaction_limit, wallet.wallet_id))
-
         return "✅ Spending limit updated"
-        
-    def see_transactions(self,id):
-        if id not in self.family_wallet.members:
+
+
+
+
+    def see_transactions(self,phone):
+
+        user:User = QueryHandling.retrieve_data("User_",UserMapper,"","phone_number = %s and family_id = %s", (phone,self.user.family_id)) 
+
+        if not user:
             return "❌ Member not found"
-        
-        user:User = self.db.find_one("users", 
-                                        lambda u: u.get("national_id") == id, 
-                                            UserMapper)  
+    
         res = UserHandling.get_user_transactions(user)   
          
         return res                  
-    def see_all_children_history(self):
-        if not self.family_wallet.members:
-            return "❌ Your family members are empty"
-            
+    def see_all_children_history(self):      
+        users = QueryHandling.retrieve_data("User_",col="phone_number",cond="family_id = %s", data=(self.user.family_id,)) 
+        if not users:
+            return "❌ Your family members are empty"    
             
         res = "\n=== Family Members Transaction History ===\n"
-        for child_id in self.family_wallet.members:
-            res += self.see_transactions(child_id)
+        for child_phone in users:
+            res += self.see_transactions(child_phone)
         return res
     def get_family_details(self):
         result = "Family members \n"
-        result += UserHandling.get_user_info(self.parent.national_id,self.db)
+        result += UserHandling.get_user_info(self.user)
         result += self.get_children_details()
         return result
     def get_children_details(self):
         """List all children in the family with their basic info"""
-        if not self.family_wallet.members:
-            return "❌ No children found"
+        users = QueryHandling.retrieve_data("User_",UserMapper,"","family_id = %s", (self.user.family_id)) 
+        if not users:
+            return "❌ Your family members are empty"  
         result = "----Family children----\n"
-        for child_id in self.family_wallet.members:
-            result += UserHandling.get_user_info(child_id,self.db)
+        for child in users:
+            result += UserHandling.get_user_info(child)
         return result

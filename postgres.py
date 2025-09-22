@@ -28,14 +28,16 @@ class PostgresSQl:
             self.conn.commit()
             if not "RETURNING"in query.upper():        
                 return None  
+            else:
+                 row = self.cursor.fetchone()  
+            if row:
+                return mapper.from_dict(dict(row)) if mapper else list(row.values())[0]
         try:          
             rows = self.cursor.fetchall()
-            if mapper:
-                return [
-                   mapper.from_dict(row) for row in rows
-                ]
-            return rows if len(rows) > 1 else rows[0] if rows else None
-
+            if mapper:         
+                if rows:
+                    return [mapper.from_dict(dict(row)) for row in rows]
+                return None
         except psycopg2.ProgrammingError:
             return None
 
@@ -83,11 +85,8 @@ class QueryHandling:
         
         cond = f"WHERE {cond}" if cond else ""
         query = f"SELECT {col} FROM {table} {cond}"
-        result = QueryHandling.db.execute(query, values=data)
-        if result:
-            if isinstance(result, list) and len(result) > 0:
-                return [mapper.from_dict(dict(row)) for row in result]
-            else:
-                return mapper.from_dict(dict(result))
-        return None
+        result = QueryHandling.db.execute(query, mapper, values=data)
+        if not result:
+            return None
+        return result if len(result)>1 else result[0] 
     

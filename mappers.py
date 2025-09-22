@@ -77,7 +77,7 @@ class UserMapper:
         )
         return user
 
-class FamilyWalletMapper:
+class FamilyMapper:
     """Handling family wallet data when reading/writing in DB"""
     @staticmethod
     def to_dict(fw: Family) -> tuple:

@@ -23,13 +23,13 @@ class Organizations:
         self.phone.append(ph)
 class OrganizationMapper:
     """Handling transaction data when reading/writing in DB"""
-    """ @staticmethod
+    @staticmethod
     def to_dict(tx: Organizations):
         return (
             tx.name,
             tx.type_,
             tx.wid
-        )"""
+        )
 
     @staticmethod
     def from_dict(data: tuple,ph):

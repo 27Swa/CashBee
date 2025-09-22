@@ -1,7 +1,7 @@
 from Validations import PhoneValidationStrategy, ValidatorContext
 from data import *
 from person import *
-from person_handling import FamilyWalletFacade, RegistrationFacade, RoleManager, UserHandling
+from person_handling import FamilyFacade, RegistrationFacade, RoleManager, UserHandling
 from postgres import PostgresSQl
 from enums import BillOrganization, CharityOrganization, AppllicationDisplay, PaymentType, RequestType, Role
 from mappers import *
@@ -59,7 +59,6 @@ def main():
                 print(AppllicationDisplay.PARENTOPERATIONS.value+"6. "+AppllicationDisplay.LOGOUT.value)
             else:
                 print("5. "+AppllicationDisplay.LOGOUT.value)
-
             try:
                 choice = input(AppllicationDisplay.SELECTING_OPTION.value).strip()
             except (EOFError, KeyboardInterrupt):
@@ -161,86 +160,59 @@ def main():
                 print(AppllicationDisplay.CHANGE_RULE_BLOCK.value)
                 try:
                     role_choice = input(AppllicationDisplay.SELECTING_NEW_RULE.value).strip()
-
                     if role_choice == "1":
-                        result = RoleManager.change_user_role(current_user, Role.USER, db_handler)
-                        print(result)
+                        role = Role.USER
                     elif role_choice == "2":
-                        age_res,age_msg = RoleManager.can_change_to_parent(current_user)
-                        if not age_res:
-                            print(age_msg)
-                            continue
-                        result = RoleManager.change_user_role(current_user, Role.PARENT, db_handler)
-                        print(result)
+                        role = Role.PARENT
                     else:
                         print("❌ Invalid role selection")
+                        continue
+                    result = RoleManager.change_user_role(current_user, role, db_handler)
+                    print(result)
 
                 except (EOFError, KeyboardInterrupt):
                     print(AppllicationDisplay.OPERATION_CANCELLED.value)
             elif choice == "5":
                 if current_user.role == Role.PARENT.value:
                     # Family Wallet Operations use case (for parents only)
+                    family_ops = FamilyFacade(user_session)
                     if not current_user.family_id:
                         print("No family wallet found. Creating one...")
                         fname = input("Enter family name: ").strip()
-                        family_wallet = Family(fname)
-                        query_fw = """INSERT INTO Family_ (family_name)
-                        VALUES ( %s)
-                        RETURNING family_id"""
-                        row = db_handler.execute(query_fw, values=(fname,))
-                        family_wallet._family_id = row
-                        current_user.family_id = family_wallet.family_id
-
-                        # Update user record with family wallet ID
-                        query_update = """UPDATE User_
-                                        SET family_id = %s
-                                        WHERE phone_number = %s"""
-                        db_handler.execute(query_update, values=(family_wallet._family_id, current_user.phone_number))
-                        print("Family wallet created successfully!")
-
-                    family_ops = FamilyWalletFacade(family_wallet,db_handler,
-                                                user_session)
+                        family_ops.create_family(fname)
                     print(AppllicationDisplay.FAMILY_BLOCK.value)
                     try:
                         family_choice = input("Choose option: ").strip()
-
                         if family_choice == "1":
                             # Add family member - enhanced to handle both existing and new users
                             print("\n--- Add Family Member ---")
-
                             # Add existing user
                             member_phone = input(AppllicationDisplay.PHONE_NUMBER.value).strip()
                             member_name = input(AppllicationDisplay.NAME.value).strip()
                             member_nid = input(AppllicationDisplay.NATIONAL_ID.value)
                             member_password = input(AppllicationDisplay.PASSWORD.value)
                             initial_limit = float(input(AppllicationDisplay.INITIAL_SPENDING_LIMIT.value).strip())
-
-                            result = family_ops.create_child_account(
-                                child_phone=member_phone,
-                                child_national_id= member_nid,
-                                child_name= member_name,
-                                child_password=member_password,
-                                maxlimit=initial_limit
-                            )
+                            user = User(member_phone,member_nid,member_name, member_password,role=Role.CHILD)       
+                            result = family_ops.create_child_account(user,maxlimit=initial_limit)
                             print(result)
 
                         elif family_choice == "2":
                             # View member info
-                            member_id = input(AppllicationDisplay.NATIONAL_ID.value).strip()
-                            info = family_ops.get_member_info(member_id)
+                            member_phone = input(AppllicationDisplay.PHONE_NUMBER.value).strip()
+                            info = family_ops.get_member_info(member_phone)
                             print(info)
 
                         elif family_choice == "3":
                             # Set spending limit
-                            member_id = input(AppllicationDisplay.NATIONAL_ID.value).strip() 
+                            member_phone = input(AppllicationDisplay.PHONE_NUMBER.value).strip() 
                             new_limit = float(input("New max limit: ").strip())
-                            result = family_ops.set_max_limit(member_id, new_limit)
+                            result = family_ops.set_max_limit(member_phone, new_limit)
                             print(result)
 
                         elif family_choice == "4":
                             # View member transaction history
-                            member_id = input(AppllicationDisplay.NATIONAL_ID.value).strip()
-                            result = family_ops.see_transactions(member_id)
+                            member_phone = input(AppllicationDisplay.PHONE_NUMBER.value).strip()
+                            result = family_ops.see_transactions(member_phone)
                             print(result)
 
                         elif family_choice == "5":
@@ -253,10 +225,11 @@ def main():
                             members_list = family_ops.get_family_details()
                             print(members_list)
                         elif family_choice == "7":
-                            # list all children                            children = family_ops.get_children_details()
-                            #print(children)
-                            ...
+                            # list all children 
+                            children = family_ops.get_children_details()
+                            print(children)                           
                         elif family_choice == "8":
+                            # back to main menu
                             continue
                         else:
                             print("Invalid option")
