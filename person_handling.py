@@ -111,8 +111,9 @@ class UserHandling:
     @staticmethod
     def get_user_info(user):
         if not user:
-            return "❌ User not found"     
-        res = f"Name: {user.name}\n"
+            return "❌ User not found"
+        res = f"***************User***************"     
+        res += f"Name: {user.name}\n"
         res += f"Role: {user.role}\n"
         res += f"Phone number: {user.phone_number}\n"
         res += WalletRepresentation.display(user.wallet)
@@ -212,13 +213,13 @@ class FamilyFacade:
          
         return res                  
     def see_all_children_history(self):      
-        users = QueryHandling.retrieve_data("User_",col="phone_number",cond="family_id = %s", data=(self.user.family_id,)) 
+        users = QueryHandling.retrieve_data("User_",UserMapper,"","family_id = %s", (self.user.family_id,)) 
         if not users:
             return "❌ Your family members are empty"    
             
         res = "\n=== Family Members Transaction History ===\n"
         for child_phone in users:
-            res += self.see_transactions(child_phone)
+            res += self.see_transactions(child_phone.phone_number)
         return res
     def get_family_details(self):
         result = "Family members \n"
@@ -227,7 +228,7 @@ class FamilyFacade:
         return result
     def get_children_details(self):
         """List all children in the family with their basic info"""
-        users = QueryHandling.retrieve_data("User_",UserMapper,"","family_id = %s", (self.user.family_id)) 
+        users = QueryHandling.retrieve_data("User_",UserMapper,"","family_id = %s", (self.user.family_id,)) 
         if not users:
             return "❌ Your family members are empty"  
         result = "----Family children----\n"
