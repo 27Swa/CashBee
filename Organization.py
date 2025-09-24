@@ -3,11 +3,12 @@ from enums import PaymentType
 
 
 class Organizations:
-    def __init__(self,n,tp,phone,wid,id = None):
+    def __init__(self,n,tp,phone,wid,password,id = None):
         self.id = id
         self._name = n
         self.org_type = tp   
-        self._phone = [phone] 
+        self._phone = [phone]
+        self.password = password 
         self.wid = wid
     @property
     def name(self):
@@ -21,6 +22,7 @@ class Organizations:
     @phone.setter
     def phone(self,ph):
         self.phone.append(ph)
+
 class OrganizationMapper:
     """Handling transaction data when reading/writing in DB"""
     @staticmethod
