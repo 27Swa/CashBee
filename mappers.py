@@ -31,7 +31,7 @@ class TransactionMapper:
             tx.from_wid,
             tx.to_wid,
             tx.amount,
-            tx.type.value,
+            tx.Transaction_type.value,
             tx.date,
             )
         

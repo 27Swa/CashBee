@@ -9,12 +9,12 @@ class Transaction:
         self.transaction_id = transaction_id
         self.from_wid = from_wallet
         self.amount = amount
-        self.type = tx_type
+        self.Transaction_type = tx_type
         self.date = dt
         self.to_wid = to_wallet
         
     def show_details(self):
-        return f"{self.date.strftime('%Y-%m-%d %H:%M')} | {self.type.value} | From Wallet {self.from_wid} -> To Wallet {self.to_wid} | {self.amount} EGP\n"
+        return f"{self.date.strftime('%Y-%m-%d %H:%M')} | {self.Transaction_type.value} | From Wallet {self.from_wid} -> To Wallet {self.to_wid} | {self.amount} EGP\n"
 
 class Wallet:
     """This class contains important information about user wallet which are:

@@ -197,7 +197,7 @@ class TransactionObserver(ABC):
         pass
 class SMSNotificationObserver(TransactionObserver):
     def update(self,  transaction: Transaction):
-        print(f"Transaction {transaction.type} of {transaction.amount} EGP from {transaction.from_wid} to {transaction.to_wid} completed")
+        print(f"Transaction {transaction.Transaction_type} of {transaction.amount} EGP from {transaction.from_wid} to {transaction.to_wid} completed")
 class TransactionSubject:
 
     def __init__(self):

@@ -1,22 +1,24 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
 from decimal import Decimal
-from typing import Tuple
-from wallet.models import Wallet
+from datetime import datetime
 from .models import Transaction
+from wallet.models import Wallet
 from users.models import User
-from enums import PaymentType, Role, CollectionMoneyOptions
+from .enums import Role, CollectionMoneyOptions
+from django.shortcuts import get_object_or_404
+from decimal import Decimal
+
 
 class Payment(ABC):
-    def __init__(self, from_wallet: Wallet, amount: Decimal, to_wallet: Wallet, tx_type: PaymentType):
-        self.from_wallet = from_wallet
+    def __init__(self, from_wallet: Wallet, amount: Decimal, to_wallet: Wallet, tx_type: str):
+        self.from_wallet = get_object_or_404(Wallet, pk=from_wallet.id)
+        self.to_wallet = get_object_or_404(Wallet, pk=to_wallet.id)
         self.amount = amount
-        self.to_wallet = to_wallet
         self.tx_type = tx_type
         self.date = datetime.now()
 
     @abstractmethod
-    def execute(self) -> Tuple[str, Transaction]:
+    def execute(self) -> tuple[str, Transaction]:
         pass
 
     def _validate(self) -> str | None:
@@ -29,72 +31,105 @@ class Payment(ABC):
         return None
 
     def _create_transaction(self):
-        return Transaction(
+        return Transaction.objects.create(
             from_wallet=self.from_wallet,
             to_wallet=self.to_wallet,
             amount=self.amount,
-            type=self.tx_type.value,
+            transaction_type=self.tx_type,
             date=self.date
         )
 
-class SendReceivePayment(Payment):
-    def __init__(self, from_wallet, amount, to_wallet):
-        super().__init__(from_wallet, amount, to_wallet, PaymentType.SEND)
 
-    def execute(self) -> Tuple[str, Transaction]:
+class SendRecievePayment(Payment):
+    def __init__(self, from_wallet: Wallet, amount: Decimal, to_wallet: Wallet):
+        super().__init__(from_wallet, amount, to_wallet, Transaction.TransactionType.SEND)
+
+    def execute(self) -> tuple[str, Transaction]:
         error = self._validate()
         if error:
             return error, None
+        print("Before:", self.from_wallet.balance, self.to_wallet.balance)
 
         self.from_wallet.balance -= Decimal(self.amount)
+        self.from_wallet.save()
         self.to_wallet.balance += Decimal(self.amount)
+        self.to_wallet.save()
+        self.from_wallet.refresh_from_db()
+        self.to_wallet.refresh_from_db()
+        print("After:", self.from_wallet.balance, self.to_wallet.balance)
 
         transaction = self._create_transaction()
-        return f"✅ {self.tx_type.value} successful", transaction
+        return f"✅ {self.tx_type} successful", transaction
+
 
 class DonationPayment(Payment):
-    def __init__(self, from_wallet, amount, to_wallet):
-        super().__init__(from_wallet, amount, to_wallet, PaymentType.DONATE)
+    def __init__(self, from_wallet: Wallet, amount: Decimal, to_wallet: Wallet):
+        super().__init__(from_wallet, amount, to_wallet, Transaction.TransactionType.DONATE)
 
-    def execute(self) -> Tuple[str, Transaction]:
+    def execute(self) -> tuple[str, Transaction]:
         error = self._validate()
         if error:
             return error, None
 
-        self.from_wallet.balance -= Decimal(self.amount)
-        self.to_wallet.balance += Decimal(self.amount)
-
+        self.from_wallet.balance -= self.amount
+        self.from_wallet.save()
+        self.to_wallet.balance += self.amount
+        self.to_wallet.save()
         transaction = self._create_transaction()
-        return f"✅ {self.tx_type.value} successful", transaction
+        return f"✅ {self.tx_type} successful", transaction
+
 
 class BillPayment(Payment):
-    def __init__(self, from_wallet, amount, to_wallet, bill):
-        super().__init__(from_wallet, amount, to_wallet, PaymentType.BILL_PAY)
+    def __init__(self, from_wallet: Wallet, amount: Decimal, to_wallet: Wallet, bill):
+        super().__init__(from_wallet, amount, to_wallet, Transaction.TransactionType.BILL_PAY)
         self.bill = bill
 
-    def execute(self) -> Tuple[str, Transaction]:
+    def execute(self) -> tuple[str, Transaction]:
         error = self._validate()
         if error:
             return error, None
-
         if self.bill.is_paid:
             return f"⚠️ Bill {self.bill.id} is already paid.", None
 
-        self.from_wallet.balance -= Decimal(self.amount)
-        self.to_wallet.balance += Decimal(self.amount)
+        self.from_wallet.balance -= self.amount
+        self.from_wallet.save()
+
+        self.to_wallet.balance += self.amount
+        self.to_wallet.save()
 
         transaction = self._create_transaction()
-
-        self.bill.mark_paid()  # هتسويها لاحقًا
-
+        self.bill.mark_paid()
+        self.bill.save()
         return f"✅ Bill Payment of {self.amount} EGP to organization {self.bill.organization_id} successful", transaction
+class PaymentFactory:
+    @staticmethod
+    def create_payment(payment_type, from_wallet, amount, to_wallet, bill=None) -> Payment:
+        if payment_type == Transaction.TransactionType.SEND:
+            return SendRecievePayment(from_wallet, amount, to_wallet)
+        elif payment_type == Transaction.TransactionType.DONATE:
+            return DonationPayment(from_wallet, amount, to_wallet)
+        elif payment_type == Transaction.TransactionType.BILL_PAY:
+            return BillPayment(from_wallet, amount, to_wallet, bill)
+        else:
+            raise ValueError("❌ Invalid payment type")
+class TransactionOperation:
+    """ To apply any operation send, receive, donate, bill pay """
+    def __init__(self, from_user: User, to_user: User):
+        self.from_wallet = from_user.wallet
+        self.to_wallet = to_user.wallet
 
+    def execute_transaction(self, payment_type, amount, bill=None):
+        payment: Payment = PaymentFactory.create_payment(payment_type, self.from_wallet, amount, self.to_wallet, bill)
+        msg, transaction = payment.execute()
+
+
+        return msg
+    
 class CollectMoney:
     def __init__(self, from_user: User, amount: Decimal, to_user: User):
         self.from_user = from_user
         self.to_user = to_user
         self.amount = amount
-        self.subject = None  # skip notifications for now
 
     def can_collect(self):
         if self.to_user.role == Role.USER.value:
@@ -108,34 +143,5 @@ class CollectMoney:
     def execute(self, req_type):
         if self.can_collect():
             return "✅ Request sent successfully"
-        return "❌ Request not allowed"
-
-class PaymentFactory:
-    @staticmethod
-    def create_payment(payment_type, from_wallet, amount, to_wallet, bill=None) -> Payment:
-        if payment_type == PaymentType.SEND:
-            return SendReceivePayment(from_wallet, amount, to_wallet)
-        elif payment_type == PaymentType.DONATE:
-            return DonationPayment(from_wallet, amount, to_wallet)
-        elif payment_type == PaymentType.BILL_PAY:
-            return BillPayment(from_wallet, amount, to_wallet, bill)
         else:
-            raise ValueError("❌ Invalid payment type")
-
-class TransactionOperation:
-    """ To apply any operation send, receive, donate, bill pay """
-    def __init__(self, from_user: User, to_user: User):
-        self.from_wallet = from_user.wallet
-        self.to_wallet = to_user.wallet
-
-    def execute_transaction(self, payment_type, amount, bill=None):
-        payment: Payment = PaymentFactory.create_payment(payment_type, self.from_wallet, amount, self.to_wallet, bill)
-        msg, transaction = payment.execute()
-
-        if transaction:
-            self.from_wallet.save()
-            self.to_wallet.save()
-
-            transaction.save()
-
-        return msg
+            return "❌ Request not allowed"
