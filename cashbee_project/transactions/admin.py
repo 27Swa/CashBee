@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib import admin
+
+from wallet.models import Wallet
 from .models import Transaction
 from .services import TransactionOperation
 @admin.register(Transaction)
@@ -17,5 +19,8 @@ class TransactionAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
 
-        op = TransactionOperation(obj.from_wallet.user, obj.to_wallet.user)
+        from_wallet = Wallet.objects.get(pk=obj.from_wallet.pk)
+        to_wallet = Wallet.objects.get(pk=obj.to_wallet.pk)
+        
+        op = TransactionOperation(from_wallet, to_wallet)
         op.execute_transaction(obj.transaction_type, obj.amount)

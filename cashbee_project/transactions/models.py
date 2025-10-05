@@ -9,7 +9,10 @@ class Transaction(models.Model):
         SEND = 'Send', 'Send'
         DONATE = 'Donate', 'Donate'
         BILL_PAY = 'Bill Pay', 'Bill Pay'
-
+    class TransactionStatus(models.TextChoices):
+        PENDING = 'Pending', 'Pending'  
+        SUCCESS = 'Success', 'Success'        
+        FAILED = 'Failed', 'Failed' 
     from_wallet = models.ForeignKey( 
         Wallet, 
         on_delete=models.CASCADE, 
@@ -22,6 +25,7 @@ class Transaction(models.Model):
     )
     amount = models.DecimalField(max_digits=12, decimal_places=2,validators=[MinValueValidator(0.01)])
     transaction_type = models.CharField(max_length=20, choices=TransactionType.choices)
+    status = models.CharField(max_length=20, choices=TransactionStatus.choices, default=TransactionStatus.PENDING)
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -32,7 +36,7 @@ class Transaction(models.Model):
         return f"TX{self.id} - {self.transaction_type} - {self.amount} EGP"
 
     def show_details(self):
-        return f"{self.date.strftime('%Y-%m-%d %H:%M')} | {self.transaction_type} | From {self.from_wallet or 'System'} -> To {self.to_wallet} | {self.amount} EGP"
+        return f"{self.date.strftime('%Y-%m-%d %H:%M')} | {self.transaction_type} | From {self.from_wallet or 'System'} -> To {self.to_wallet} | {self.amount} EGP | Status: {self.status}"
 
 
 class CollectionRequest(models.Model):
