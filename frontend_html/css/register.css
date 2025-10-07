@@ -1,0 +1,122 @@
+body {
+    overflow: hidden;
+}
+
+/* --- Main Sign Up Content --- */
+#signup,
+#login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    box-sizing: border-box;
+}
+
+/* --- Image Section --- */
+.part-image {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.part-image img {
+    width: 80%;
+    max-width: 350px;
+    height: auto;
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
+
+.welcome-text {
+    font-size: 28px;
+    color: #444;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* --- Form Section --- */
+.form-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: var(--text-light);
+}
+
+.form-section form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* Inputs */
+.form-section input[type="text"],
+.form-section input[type="email"],
+.form-section input[type="tel"],
+.form-section input[type="password"] {
+    width: 80%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--data-colors);
+    margin-bottom: 15px;
+    color: var(--text-dark);
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.form-section input:focus {
+    outline: none;
+    transform: scale(1.02);
+}
+
+.form-section input::placeholder {
+    color: var(--hint-text);
+}
+
+/* Button */
+.enter-btn {
+    width: 80%;
+    padding: 15px;
+    background-color: var(--background-dark);
+    color: var(--text-light);
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.enter-btn:hover {
+    background-color: var(--text-grey);
+    transform: scale(1.03);
+}
+
+/* Login link */
+.link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.link a {
+    color: #016bff;
+    font-size: 15px;
+    text-decoration: none;
+}
+
+.link a:hover {
+    text-decoration: underline;
+}

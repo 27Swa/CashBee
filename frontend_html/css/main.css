@@ -14,9 +14,6 @@
     max-width: 50%;
 }
 
-.hero-content h2 {
-    color: var(--text-dark);
-}
 
 .hero-content p {
     color: var(--text-grey);
@@ -44,15 +41,16 @@
     color: var(--text-grey);
 }
 
-
+.part-image img {
+    max-width: 100%;
+    height: auto;
+    padding: 30px;
+    border-radius: 10px;
+}
 
 /* --- Services Section --- */
 .services-section {
     text-align: center;
-}
-
-.services-section h3 {
-    color: var(--text-dark);
 }
 
 .service-cards-container {

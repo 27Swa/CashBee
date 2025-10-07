@@ -1,12 +1,19 @@
-function showMessage(event) {
+function showMessage(event, button) {
     event.preventDefault();
+
     // validating that data exists
-    const name = document.querySelector('input[type="text"]').value.trim();
-    const email = document.querySelector('input[type="email"]').value.trim();
-    const message = document.querySelector('textarea').value.trim();
+    const form = button.closest("form");
+    const inputs = form.querySelectorAll('input[required]');
+    let allFilled = true;
+
+    inputs.forEach(input => {
+        if (!input.value.trim()) {
+            allFilled = false;
+        }
+    });
 
     document.querySelector(".overlay").style.display = "block";
-    if (!name || !email || !message) {
+    if (!allFilled) {
         document.querySelector(".message.fail").style.display = "block";
     }
     else

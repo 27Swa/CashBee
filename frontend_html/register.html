@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="assests\bee.png">
+    <title>CashBee</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/register.css">
+    <script src="js/script.js"></script>
+</head>
+
+<body>
+    <header class="navbar">
+        <figure class="logo">
+            <img src="..\assests\bee.png" alt="Logo">
+            <figcaption>CashBee</figcaption>
+        </figure>
+        <nav>
+            <ul>
+                <li><a href="index.html#home">Home</a></li>
+                <li><a href="index.html#about">About</a></li>
+                <li><a href="index.html#services">Services</a></li>
+                <li><a href="index.html#contact">Contact us</a></li>
+            </ul>
+        </nav>
+        <div class="nav-buttons">
+            <a href="#" class="btn-login">Log in</a>
+            <a href="#" class="btn-signup">Sign up</a>
+        </div>
+    </header>
+
+    <section id="signup" class="content-section">
+        <div class="part-image">
+            <img src="..\assests\signup bee.png" alt="Welcoming Bee">
+            <h2 class="welcome-text">Welcome To CashBee</h2>
+        </div>
+        <div class="form-section">
+            <h1 class="form-title">Sign Up</h1>
+            <form>
+                <input type="text" id="orgName" name="orgName" placeholder="Organization name" required>
+
+                <input type="email" id="orgEmail" name="orgEmail" placeholder="Organization email" required>
+
+                <input type="tel" id="orgPhone" name="orgPhone" placeholder="Organization Phone" required>
+
+                <input type="text" id="orgType" name="orgType" placeholder="Organization type" required>
+
+                <input type="password" id="orgPassword" name="orgPassword" placeholder="Organization password" required>
+
+                <button type="submit" class="enter-btn" onclick="showMessage(event,this)">Enter</button>
+            </form>
+            <p class="link">
+                <a href="#login">Already have an account? Login</a>
+            </p>
+        </div>
+    </section>
+
+    <section id="login" class="content-section">
+        <div class="form-section">
+            <h1 class="form-title">Login</h1>
+            <form>
+                <input type="email" id="orgEmail" name="orgEmail" placeholder="Email" required>
+
+                <input type="password" id="orgPassword" name="orgPassword" placeholder="Password" required>
+
+                <button type="submit" class="enter-btn" onclick="showMessage(event,this)">Enter</button>
+            </form>
+            <p class="link">
+                <a href="#signup">Don't have an account? Sign Up</a>
+            </p>
+        </div>
+        <div class="part-image">
+            <img src="..\assests\welcoming bee.png" alt="Welcoming Bee">
+            <h2 class="welcome-text">Welcome Back</h2>
+        </div>
+    </section>
+
+    <!-- used when need to decrease opacity when displaying the message -->
+    <div class="overlay" aria-hidden="true"></div>
+
+    <!-- Okay message -->
+    <div class="message success">
+        <img src="..\assests\smile.png" alt="Happy Bee" class="messagebee">
+        <button class="closeBtn" onclick="closeMessage()">X</button>
+        <p>Message sent<br>successfully</p>
+    </div>
+
+    <!-- Problem message -->
+    <div class="message fail">
+        <img src="..\assests\sad.png" alt="Sad Bee" class="messagebee">
+        <button class="closeBtn" onclick="closeMessage()">X</button>
+        <p>Fill the missing data</p>
+    </div>
+</body>
+
+</html>

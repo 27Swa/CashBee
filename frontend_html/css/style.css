@@ -1,6 +1,6 @@
 :root {
-    --main-bg-color: #EAE5A6;
-    --section-card-color: #f6f3e5;
+    --main-bg-color: #F1F0D2;
+    --section-card-color: #EAE5A6;
     --accent-yellow: #f8c000;
     --nav-bar: #DBD2B6;
     --register-buttons: #A98017;
@@ -24,6 +24,10 @@
     --border-radius: 15px;
     --padding-main: 60px;
 
+}
+
+html {
+    scroll-padding-top: 80px;
 }
 
 /* Base Styles */
@@ -81,7 +85,7 @@ p {
     align-items: center;
     padding: 10px var(--padding-main);
     background-color: var(--nav-bar);
-    border-radius: var(--border-radius) var(--border-radius);
+    border-radius: var(--border-radius);
     position: sticky;
     top: 0;
     z-index: 1000;
