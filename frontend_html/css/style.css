@@ -7,23 +7,21 @@
     --cards: #EBE8BC;
     --message-boxes: #F6CE6B;
     --message-boxes-fail: #7A4300;
-
+    --buttons: #A98017;
+    --light-red: #ccc;
     --primary-color: #f0e68c;
-    /* Khaki/Light Beige background */
     --secondary-color: #ffd700;
-    /* Gold/Yellow-Orange for inputs/buttons */
+    --hover-color: #e5b000;
     --text-dark: #333;
     --text-light: white;
     --text-grey: #555;
     --background-dark: #444;
-    /* Dark gray for overall background */
     --form-title-color: #8b4513;
     --data-colors: #E8AD37;
     --hint-text: rgba(169, 128, 23, 1);
-
+    --water-blue: #016bff;
     --border-radius: 15px;
     --padding-main: 60px;
-
 }
 
 html {
@@ -48,6 +46,10 @@ h1,
 h2,
 h3 {
     color: var(--text-dark);
+    padding-bottom: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+
 }
 
 h1 {
@@ -56,16 +58,15 @@ h1 {
 
 h2 {
     font-size: 2em;
-    font-weight: bold;
 }
 
 h3 {
     font-size: 1.5em;
-    margin-bottom: 20px;
 }
 
 p {
     line-height: 1.6;
+    font-size: 20px;
     white-space: pre-line;
 }
 
@@ -87,7 +88,13 @@ p {
     background-color: var(--nav-bar);
     border-radius: var(--border-radius);
     position: sticky;
+    /* To make the navigation bar in this 
+    position even in scrolling
+    */
     top: 0;
+    /* High value was declared so that 
+    it will stays above anything else
+    */
     z-index: 1000;
 }
 
@@ -104,14 +111,14 @@ p {
     margin-right: 8px;
 }
 
-.navbar nav ul {
+.navbar ul {
     list-style: none;
     display: flex;
     font-size: 20px;
     gap: 25px;
 }
 
-.navbar nav a {
+.navbar ul a {
     text-decoration: none;
     color: var(--text-grey);
     font-weight: bold;
@@ -119,9 +126,8 @@ p {
     transition: color 0.3s;
 }
 
-.navbar nav a:hover,
-.navbar nav a.active {
-    color: var(--accent-yellow);
+.navbar ul a:hover {
+    color: var(--hover-color);
     font-size: 22px;
 }
 
@@ -130,27 +136,32 @@ p {
     padding: 15px 15px;
     border-radius: 5px;
     font-weight: bold;
-    font-size: 18;
+    font-size: 18px;
     transition: background-color 0.3s;
 }
 
 .btn-login {
-    color: #A98017;
-    border: 2px solid #A98017;
+    color: var(--buttons);
     margin-right: 10px;
 }
 
 .btn-signup {
-    background-color: #A98017;
-    color: white;
-    border: 2px solid #A98017;
+    background-color: var(--buttons);
+    color: var(--text-light);
 }
 
-.btn-signup:hover {
-    background-color: #e5b000;
+.btn-login,
+.btn-signup {
+    border: 2px solid var(--buttons);
 }
 
-.part-image img {
+.btn-signup:hover,
+.btn-login:hover {
+    background-color: var(--hover-color);
+    color: var(--text-light);
+}
+
+.about-image {
     max-width: 100%;
     height: auto;
     padding: 30px;
@@ -203,7 +214,7 @@ p {
 
 /* Message text */
 .message p {
-    color: white;
+    color: var(--text-light);
     font-size: 30px;
     font-weight: bold;
     margin: 0;
@@ -217,5 +228,5 @@ p {
     border: none;
     font-size: 20px;
     cursor: pointer;
-    color: #333;
+    color: var(--text-dark);
 }

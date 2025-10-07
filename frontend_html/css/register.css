@@ -13,7 +13,7 @@ body {
 }
 
 /* --- Image Section --- */
-.part-image {
+.welcome-image {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -21,7 +21,7 @@ body {
     justify-content: center;
 }
 
-.part-image img {
+.welcome-image img {
     width: 80%;
     max-width: 350px;
     height: auto;
@@ -31,7 +31,7 @@ body {
 
 .welcome-text {
     font-size: 28px;
-    color: #444;
+    color: var(--text-dark);
     font-weight: 600;
     text-align: center;
 }
@@ -112,7 +112,7 @@ body {
 }
 
 .link a {
-    color: #016bff;
+    color: var(--water-blue);
     font-size: 15px;
     text-decoration: none;
 }

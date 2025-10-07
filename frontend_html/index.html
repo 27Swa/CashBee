@@ -4,15 +4,10 @@
 <head>
     <!--To make it support arabic letters if used-->
     <meta charset="UTF-8">
-    <!-- To make the website works well in desktop
-     or mobile without any problems
-    -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assests\bee.png">
     <title>CashBee</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="js/script.js"></script>
 </head>
 
@@ -22,29 +17,27 @@
             <img src="..\assests\bee.png" alt="Logo">
             <figcaption>CashBee</figcaption>
         </figure>
-        <nav>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#services">Services</a></li>
-                <li><a href="#contact">Contact us</a></li>
-            </ul>
-        </nav>
+
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#contact">Contact us</a></li>
+        </ul>
+
         <div class="nav-buttons">
-            <a href="" class="btn-login">Log in</a>
+            <a href="register.html#login" class="btn-login">Log in</a>
             <a href="register.html#signup" class="btn-signup">Sign up</a>
         </div>
     </header>
 
-    <section id="home" class="content-section hero-section">
-        <div class="hero-content">
+    <section id="home" class="content-section home-section">
+        <div class="home-content">
             <h2>Send smart, Spend safe</h2>
             <p>"Empowering families to share money with trust, transparency, and ease. Every transfer should feel
                 simple and secure."</p>
         </div>
-        <div class="hero-image">
-            <img src="..\assests\Family talks.png" alt="family connection">
-        </div>
+        <img src="..\assests\Family talks.png" alt="family connection" class="home-image">
     </section>
 
     <section id="about" class="content-section about-section">
@@ -58,32 +51,31 @@
                 families manage money with trust, transparency,
                 and ease.</p>
         </div>
-        <div class="part-image">
-            <img src="..\assests\Transferring money.png" alt="About Illustration">
-        </div>
+        <img src="..\assests\Transferring money.png" alt="About Illustration" class="about-image">
     </section>
 
     <section id="services" class="content-section services-section">
         <h2>Services</h2>
         <div class="service-cards-container">
+
             <div class="service-card">
-                <i class="fas fa-arrow-up icon"></i>
+                <img src="..\assests\send.png" alt="send icon">
                 <p>Send Money</p>
             </div>
-            <div class="service-card">
-                <i class="fas fa-file-invoice icon"></i>
+            <!-- <div class="service-card">
+                <img src="..\assests\billpay.png" alt="bill pay icon">
                 <p>Bill Pay</p>
-            </div>
+            </div> -->
             <div class="service-card">
-                <i class="fas fa-arrow-down icon"></i>
+                <img src="..\assests\receive.png" alt="receive icon">
                 <p>Collect Money</p>
             </div>
-            <div class="service-card">
-                <i class="fas fa-heart icon"></i>
+            <!-- <div class="service-card">
+                <img src="..\assests\Donate.png" alt="donate icon">
                 <p>Donate</p>
-            </div>
+            </div> -->
             <div class="service-card">
-                <i class="fas fa-users icon"></i>
+                <img src="..\assests\family.png" alt="receive icon">
                 <p>Family Hub</p>
             </div>
         </div>
