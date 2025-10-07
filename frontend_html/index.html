@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--To make it support arabic letters if used-->
+    <meta charset="UTF-8">
+    <!-- To make the website works well in desktop
+     or mobile without any problems
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="assests\bee.png">
+    <title>CashBee</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="js/script.js"></script>
+</head>
+
+<body>
+    <header class="navbar">
+        <figure class="logo">
+            <img src="..\assests\bee.png" alt="Logo">
+            <figcaption>CashBee</figcaption>
+        </figure>
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact us</a></li>
+            </ul>
+        </nav>
+        <div class="nav-buttons">
+            <a href="" class="btn-login">Log in</a>
+            <a href="register.html#signup" class="btn-signup">Sign up</a>
+        </div>
+    </header>
+
+    <section id="home" class="content-section hero-section">
+        <div class="hero-content">
+            <h2>Send smart, Spend safe</h2>
+            <p>"Empowering families to share money with trust, transparency, and ease. Every transfer should feel
+                simple and secure."</p>
+        </div>
+        <div class="hero-image">
+            <img src="..\assests\Family talks.png" alt="family connection">
+        </div>
+    </section>
+
+    <section id="about" class="content-section about-section">
+        <div class="about-text">
+            <h2>About</h2>
+
+            <p>CashBee is a simple and secure platform designed
+                to make money transfers between parents and
+                children effortless. Whether it's allowance,
+                savings, or everyday support, CashBee helps
+                families manage money with trust, transparency,
+                and ease.</p>
+        </div>
+        <div class="part-image">
+            <img src="..\assests\Transferring money.png" alt="About Illustration">
+        </div>
+    </section>
+
+    <section id="services" class="content-section services-section">
+        <h2>Services</h2>
+        <div class="service-cards-container">
+            <div class="service-card">
+                <i class="fas fa-arrow-up icon"></i>
+                <p>Send Money</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-file-invoice icon"></i>
+                <p>Bill Pay</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-arrow-down icon"></i>
+                <p>Collect Money</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-heart icon"></i>
+                <p>Donate</p>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-users icon"></i>
+                <p>Family Hub</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="content-section contact-section">
+        <h2>Contact us</h2>
+        <form class="contact-form">
+            <input type="text" placeholder="Name" required>
+
+            <input type="email" placeholder="Email" required>
+
+            <textarea placeholder="Message" rows="5" required></textarea>
+
+            <button type="submit" class="btn-submit" onclick="showMessage(event)">Send</button>
+        </form>
+    </section>
+
+    <!-- used when need to decrease opacity when displaying the message -->
+    <div class="overlay" aria-hidden="true"></div>
+
+    <!-- Okay message -->
+    <div class="message success">
+        <img src="..\assests\smile.png" alt="Happy Bee" class="messagebee">
+        <button class="closeBtn" onclick="closeMessage()">X</button>
+        <p>Message sent<br>successfully</p>
+    </div>
+
+    <!-- Problem message -->
+    <div class="message fail">
+        <img src="..\assests\sad.png" alt="Sad Bee" class="messagebee">
+        <button class="closeBtn" onclick="closeMessage()">X</button>
+        <p>Fill the missing data</p>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,176 @@
+/* Adjust padding for the hero section to align content with nav */
+.hero-section {
+    display: flex;
+    margin-top: -20px;
+    /* Compensate for the navbar's bottom edge */
+    padding-top: var(--padding-main);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    /* Rounded bottom corners */
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hero-content {
+    max-width: 50%;
+}
+
+.hero-content h2 {
+    color: var(--text-dark);
+}
+
+.hero-content p {
+    color: var(--text-grey);
+    max-width: 80%;
+    margin-top: 15px;
+}
+
+.hero-image img {
+    max-width: 100%;
+    height: auto;
+    padding: 50px;
+    border-radius: 10px;
+}
+
+/* --- About Section --- */
+.about-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+}
+
+.about-text {
+    max-width: 55%;
+    color: var(--text-grey);
+}
+
+
+
+/* --- Services Section --- */
+.services-section {
+    text-align: center;
+}
+
+.services-section h3 {
+    color: var(--text-dark);
+}
+
+.service-cards-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 40px;
+}
+
+.service-card {
+    flex-basis: 150px;
+    text-align: center;
+    color: var(--text-dark);
+}
+
+.service-card .icon {
+    font-size: 3em;
+    color: var(--accent-yellow);
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 50%;
+    background-color: transparent;
+    /* Assuming a clear background behind the yellow icon */
+    transition: transform 0.3s;
+}
+
+.service-card:hover .icon {
+    transform: scale(1.1);
+}
+
+.service-card p {
+    font-weight: bold;
+    color: var(--text-grey);
+}
+
+/* --- Contact Section --- */
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    max-width: 600px;
+    margin: 0 auto;
+    gap: 15px;
+}
+
+.contact-form input[type="text"],
+.contact-form input[type="email"],
+.contact-form textarea {
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    background-color: white;
+    /* Contrast with the section background */
+    color: var(--text-dark);
+}
+
+.contact-form textarea {
+    resize: vertical;
+}
+
+.btn-submit {
+    align-self: flex-start;
+    background-color: var(--accent-yellow);
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #e5b000;
+}
+
+/* Media Query for Responsiveness */
+@media (max-width: 900px) {
+    .main-container {
+        padding: 10px;
+    }
+
+    .navbar {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 20px;
+    }
+
+    .navbar nav ul {
+        gap: 15px;
+    }
+
+    .hero-section,
+    .about-section {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .hero-content,
+    .about-text {
+        max-width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .hero-content p {
+        max-width: 100%;
+    }
+
+    .about-image,
+    .hero-image {
+        order: -1;
+        /* Move image above text on mobile for better flow */
+    }
+
+    .service-cards-container {
+        justify-content: center;
+    }
+}

@@ -1,0 +1,217 @@
+:root {
+    --main-bg-color: #EAE5A6;
+    --section-card-color: #f6f3e5;
+    --accent-yellow: #f8c000;
+    --nav-bar: #DBD2B6;
+    --register-buttons: #A98017;
+    --cards: #EBE8BC;
+    --message-boxes: #F6CE6B;
+    --message-boxes-fail: #7A4300;
+
+    --primary-color: #f0e68c;
+    /* Khaki/Light Beige background */
+    --secondary-color: #ffd700;
+    /* Gold/Yellow-Orange for inputs/buttons */
+    --text-dark: #333;
+    --text-light: white;
+    --text-grey: #555;
+    --background-dark: #444;
+    /* Dark gray for overall background */
+    --form-title-color: #8b4513;
+    --data-colors: #E8AD37;
+    --hint-text: rgba(169, 128, 23, 1);
+
+    --border-radius: 15px;
+    --padding-main: 60px;
+
+}
+
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--main-bg-color);
+    color: var(--text-dark);
+}
+
+/* Utility Classes */
+h1,
+h2,
+h3 {
+    color: var(--text-dark);
+}
+
+h1 {
+    font-size: 2.5em;
+}
+
+h2 {
+    font-size: 2em;
+    font-weight: bold;
+}
+
+h3 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+}
+
+p {
+    line-height: 1.6;
+    white-space: pre-line;
+}
+
+/* Section Styling */
+.content-section {
+    background-color: var(--section-card-color);
+    padding: var(--padding-main);
+    border-radius: var(--border-radius);
+    margin-bottom: 40px;
+    height: 610px;
+}
+
+/* --- Navigation Bar --- */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px var(--padding-main);
+    background-color: var(--nav-bar);
+    border-radius: var(--border-radius) var(--border-radius);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+
+.logo img {
+    width: 60px;
+    height: 60px;
+    transform: rotate(-20deg);
+    margin-right: 8px;
+}
+
+.navbar nav ul {
+    list-style: none;
+    display: flex;
+    font-size: 20px;
+    gap: 25px;
+}
+
+.navbar nav a {
+    text-decoration: none;
+    color: var(--text-grey);
+    font-weight: bold;
+    padding-bottom: 5px;
+    transition: color 0.3s;
+}
+
+.navbar nav a:hover,
+.navbar nav a.active {
+    color: var(--accent-yellow);
+    font-size: 22px;
+}
+
+.nav-buttons a {
+    text-decoration: none;
+    padding: 15px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 18;
+    transition: background-color 0.3s;
+}
+
+.btn-login {
+    color: #A98017;
+    border: 2px solid #A98017;
+    margin-right: 10px;
+}
+
+.btn-signup {
+    background-color: #A98017;
+    color: white;
+    border: 2px solid #A98017;
+}
+
+.btn-signup:hover {
+    background-color: #e5b000;
+}
+
+.part-image img {
+    max-width: 100%;
+    height: auto;
+    padding: 30px;
+    border-radius: 10px;
+}
+
+/* Handling messages displayed */
+/* Background decrease opacity*/
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 5;
+}
+
+.message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 520px;
+    height: 300px;
+    padding: 50px 50px;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    display: none;
+    text-align: center;
+    z-index: 10;
+    font-family: 'Poppins', sans-serif;
+}
+
+.success {
+    background-color: var(--message-boxes);
+}
+
+.fail {
+    background-color: var(--message-boxes-fail);
+}
+
+/* Bee displayed inside the image */
+.messagebee {
+    width: 120px;
+    vertical-align: middle;
+    margin-bottom: 10px;
+}
+
+/* Message text */
+.message p {
+    color: white;
+    font-size: 30px;
+    font-weight: bold;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* button */
+.close-btn {
+    position: absolute;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #333;
+}
