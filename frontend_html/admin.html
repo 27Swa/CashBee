@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--To make it support arabic letters if used-->
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="assests\bee.png">
+    <title>CashBee</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <!-- <script src="js/script.js"></script> -->
+</head>
+
+<body>
+    <header class="navbar">
+        <figure class="logo">
+            <img src="..\assests\bee.png" alt="Logo">
+            <figcaption>CashBee</figcaption>
+        </figure>
+
+        <ul>
+            <li><a href="#account">Account</a></li>
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#accounts-management">Accounts Management</a></li>
+            <li><a href="#transactions">Transactions</a></li>
+            <li><a href="#collection-request">Collection Requests</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <a href="index.html#home">Logout</a>
+        </div>
+    </header>
+
+    <section id="account" class="content-section info-card">
+        <div class="info-item">
+            <img src="..\assests\person.png" alt="person icon" class="account-image">
+            <p class="label">Name</p>
+        </div>
+        <div class="info-item">
+            <img src="..\assests\role.png" alt="role icon" class="account-image">
+            <p class="label">Role</p>
+        </div>
+        <div class="info-item">
+            <img src="..\assests\email.png" alt="email icon" class="account-image">
+            <p class="label">Email</p>
+        </div>
+        <div class="info-item">
+            <img src="..\assests\permission.png" alt="permission icon" class="account-image">
+            <p class="label">Permissions</p>
+        </div>
+    </section>
+
+    <section id="dashboard" class="content-section dashboard">
+        <h2>Dashboard</h2>
+        <!-- Stats Cards -->
+        <section class="stats">
+            <div class="card">
+                <p>Total Operations</p>
+                <h3>1,245</h3>
+            </div>
+            <div class="card">
+                <p>Active Users</p>
+                <h3>320</h3>
+            </div>
+            <div class="card">
+                <p>Average Money sent</p>
+                <h3>10,000 EG</h3>
+            </div>
+        </section>
+        <div class="dashboard-data">
+
+            <img src="..\assests\line chart.png" alt="line chart" />
+            <table class="recent-transactions">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Transaction Type</th>
+                        <th>Money</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ahmed</td>
+                        <td>Send</td>
+                        <td>500 EG</td>
+                        <td>2025-10-01</td>
+                    </tr>
+                    <tr>
+                        <td>Sara</td>
+                        <td>Receive</td>
+                        <td>300 EG</td>
+                        <td>2025-10-02</td>
+                    </tr>
+                    <tr>
+                        <td>Khaled</td>
+                        <td>Send</td>
+                        <td>1500 EG</td>
+                        <td>2025-10-03</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <section id="accounts-management" class="content-section">
+        <h2>Accounts Managements</h2>
+        <div class="filter-bar">
+            <span class="filter-label">Filter by:</span>
+            <div class="filter-options">
+                <button class="filter-btn" data-filter="type">User Type</button>
+                <button class="filter-btn" data-filter="date">Date of creation</button>
+                <button class="filter-btn" data-filter="user">User</button>
+            </div>
+        </div>
+
+        <ul class="recyclerview">
+            <div class="recycler-card">
+                <img src="..\assests\person.png" alt="person icon" class="account-image">
+                <span class="recycler-data">User</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\person.png" alt="person icon" class="account-image">
+                <span class="recycler-data">User</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\person.png" alt="person icon" class="account-image">
+                <span class="recycler-data">User</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\person.png" alt="person icon" class="account-image">
+                <span class="recycler-data">User</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\person.png" alt="person icon" class="account-image">
+                <span class="recycler-data">User</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\person.png" alt="person icon" class="account-image">
+                <span class="recycler-data">User</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\person.png" alt="person icon" class="account-image">
+                <span class="recycler-data">User</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\person.png" alt="person icon" class="account-image">
+                <span class="recycler-data">User</span>
+            </div>
+        </ul>
+    </section>
+
+    <section id="transactions" class="content-section">
+        <h2>Transactions</h2>
+        <div class="filter-bar">
+            <span class="filter-label">Filter by:</span>
+            <div class="filter-options">
+                <button class="filter-btn" data-filter="type">Type</button>
+                <button class="filter-btn" data-filter="date">Date</button>
+                <button class="filter-btn" data-filter="user">User</button>
+                <button class="filter-btn" data-filter="status">Status</button>
+            </div>
+        </div>
+
+        <ul class="recyclerview">
+            <div class="recycler-card pending">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+                <span class="recycler-data">Pending Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\sad emoji.png" alt="sad emoji icon" class="trans-req-imgs">
+                <span class="recycler-data">Rejected Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\happy emoji.png" alt="happy emoji icon" class="trans-req-imgs">
+                <span class="recycler-data">Accepted Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+                <span class="recycler-data">Pending Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\sad emoji.png" alt="sad emoji icon" class="trans-req-imgs">
+                <span class="recycler-data">Rejected Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\happy emoji.png" alt="happy emoji icon" class="trans-req-imgs">
+                <span class="recycler-data">Accepted Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+                <span class="recycler-data">Pending Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\sad emoji.png" alt="sad emoji icon" class="trans-req-imgs">
+                <span class="recycler-data">Rejected Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\happy emoji.png" alt="happy emoji icon" class="trans-req-imgs">
+                <span class="recycler-data">Accepted Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+                <span class="recycler-data">Pending Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\sad emoji.png" alt="sad emoji icon" class="trans-req-imgs">
+                <span class="recycler-data">Rejected Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\happy emoji.png" alt="happy emoji icon" class="trans-req-imgs">
+                <span class="recycler-data">Accepted Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+                <span class="recycler-data">Pending Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\sad emoji.png" alt="sad emoji icon" class="trans-req-imgs">
+                <span class="recycler-data">Rejected Transaction Message</span>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\happy emoji.png" alt="happy emoji icon" class="trans-req-imgs">
+                <span class="recycler-data">Accepted Transaction Message</span>
+            </div>
+
+        </ul>
+
+    </section>
+
+    <section id="collection-request" class="content-section">
+        <h2>Requests</h2>
+        <div class="filter-bar">
+            <span class="filter-label">Filter by:</span>
+            <div class="filter-options">
+                <button class="filter-btn active" data-filter="date">Date</button>
+            </div>
+        </div>
+
+        <ul class="recyclerview">
+
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+            <div class="recycler-card">
+                <img src="..\assests\hour glass.png" alt="pending icon" class="trans-req-imgs">
+
+                <span class="recycler-data">Request Message sent</span>
+
+                <div class="action-icons">
+                    <img src="..\assests\accept circle.png" alt="accept icon" class="trans-req-imgs">
+                    <img src="..\assests\refuse circle.png" alt="reject icon" class="trans-req-imgs">
+                </div>
+            </div>
+
+        </ul>
+    </section>
+
+</body>
