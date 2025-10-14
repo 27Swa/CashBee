@@ -20,17 +20,17 @@ class Family(models.Model):
         verbose_name_plural = "Families"
         db_table = 'Families'
 
-class User(models.Model):
-    name = models.CharField(max_length=50, null=False, blank=False)
+class User(AbstractUser):
     phone_number = models.CharField(max_length=11, unique=True, null=False, blank=False)
     national_id = models.CharField(primary_key=True,max_length=14, null=False, blank=False)
     role = models.CharField(max_length=10, choices=UsersRole.choices, default=UsersRole.USER)
     family = models.ForeignKey(Family, on_delete=models.SET_NULL, null=True, blank=True)
     failed_attempts = models.IntegerField(default=0)  
     lock_time = models.DateTimeField(null=True, blank=True)
-    password = models.CharField(max_length=10,null=False, blank=False)
     wallet = models.OneToOneField(Wallet,on_delete=models.PROTECT,null=True,blank=True)
     
+    USERNAME_FIELD = 'national_id'
+
     class Meta:
         verbose_name = "Person"
         verbose_name_plural = "People"

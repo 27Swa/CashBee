@@ -1,12 +1,15 @@
 from abc import ABC, abstractmethod
 from decimal import Decimal
 from datetime import datetime
+
+from django.forms import ValidationError
 from .models import Transaction
 from wallet.models import Wallet
 from users.models import User
 from .enums import Role, CollectionMoneyOptions
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
+from django.db import transaction as transaction
 
 class Payment(ABC):
     def __init__(self, from_wallet: Wallet, amount: Decimal, to_wallet: Wallet, tx_type: str):
@@ -27,84 +30,88 @@ class Payment(ABC):
     def execute(self) -> str:
         pass
     def _validate(self) -> str | None:
-        if self.amount <= 0:
-            return "❌ Invalid amount"
-        if self.amount > self.from_wallet.balance:
-            return "❌ Insufficient balance"
-        if self.amount > self.from_wallet.transaction_limit:
-            return "❌ Exceeds transaction limit"
-        return None
-        if res == True:
-            self.transaction.objects.update(status = Transaction.TransactionStatus.SUCCESS)
-        else:
-            self.transaction.objects.update(status = Transaction.TransactionStatus.FAILED)
+        try:    
+            if self.amount <= 0:
+                raise "❌ Invalid amount"
+            if self.amount > self.from_wallet.balance:
+                raise "❌ Insufficient balance"
+            if self.amount > self.from_wallet.transaction_limit:
+                raise "❌ Exceeds transaction limit"
+            return None
+        except Exception as e:
+            return f"Problem in amount: {str(e)} "
     def update_transaction(self,res):
-        if res:
-            self.transaction.status = Transaction.TransactionStatus.SUCCESS
-        else:   
-            self.transaction.status = Transaction.TransactionStatus.FAILED
+        self.transaction.status = (
+            Transaction.TransactionStatus.SUCCESS if res else Transaction.TransactionStatus.FAILED
+        )
         self.transaction.save()
+
 class SendRecievePayment(Payment):
     def __init__(self, from_wallet: Wallet, amount: Decimal, to_wallet: Wallet):
         super().__init__(from_wallet, amount, to_wallet, Transaction.TransactionType.SEND)
-
+    @transaction.atomic
     def execute(self) -> str:
         error = self._validate()
         if error:
             self.update_transaction(False)
             return error
+        try:
+            self.from_wallet.balance -= Decimal(self.amount)
+            self.from_wallet.save()
+            self.to_wallet.balance += Decimal(self.amount)
+            self.to_wallet.save()
 
-        self.from_wallet.balance -= Decimal(self.amount)
-        self.from_wallet.save()
-        self.to_wallet.balance += Decimal(self.amount)
-        self.to_wallet.save()
-
-        self.update_transaction(True)
-        return f"✅ {self.tx_type} successful"
+            self.update_transaction(True)
+            return f"✅ {self.tx_type} successful"
+        except Exception as e:
+            self.update_transaction(False)
+            return f"❌ Transaction failed: {str(e)}"
 class DonationPayment(Payment):
     def __init__(self, from_wallet: Wallet, amount: Decimal, to_wallet: Wallet):
         super().__init__(from_wallet, amount, to_wallet, Transaction.TransactionType.DONATE)
-
+    @transaction.atomic
     def execute(self) -> str:
         error = self._validate()
         if error:
             self.update_transaction(False)
             return error
 
+        try:
+            self.from_wallet.balance -= self.amount
+            self.from_wallet.save()
+            self.to_wallet.balance += self.amount
+            self.to_wallet.save()
 
-        self.from_wallet.balance -= self.amount
-        self.from_wallet.save()
-        self.to_wallet.balance += self.amount
-        self.to_wallet.save()
-
-        self.update_transaction(True)
-        return f"✅ {self.tx_type} successful"
-
+            self.update_transaction(True)
+            return f"✅ {self.tx_type} successful"
+        except Exception as e:
+                    self.update_transaction(False)
+                    return f"❌ Transaction failed: {str(e)}"
 class BillPayment(Payment):
     def __init__(self, from_wallet: Wallet, amount: Decimal, to_wallet: Wallet, bill):
         super().__init__(from_wallet, amount, to_wallet, Transaction.TransactionType.BILL_PAY)
         self.bill = bill
-
+    @transaction.atomic
     def execute(self) -> str:
         error = self._validate()
-        if error:
+        if error or self.bill.is_paid:
             self.update_transaction(False)
             return error, None
-        if self.bill.is_paid:
+        try:
+            self.from_wallet.balance -= self.amount
+            self.from_wallet.save()
+
+            self.to_wallet.balance += self.amount
+            self.to_wallet.save()
+
+            self.bill.mark_paid()
+            self.bill.save()
+
+            self.update_transaction(True)
+            return f"✅ Bill Payment of {self.amount} EGP to organization {self.bill.organization_id} successful"
+        except Exception as e:
             self.update_transaction(False)
-            return f"⚠️ Bill {self.bill.id} is already paid.", None
-
-        self.from_wallet.balance -= self.amount
-        self.from_wallet.save()
-
-        self.to_wallet.balance += self.amount
-        self.to_wallet.save()
-
-        self.bill.mark_paid()
-        self.bill.save()
-
-        self.update_transaction(True)
-        return f"✅ Bill Payment of {self.amount} EGP to organization {self.bill.organization_id} successful"
+            return f"❌ Transaction failed: {str(e)}"
 class PaymentFactory:
     @staticmethod
     def create_payment(payment_type, from_wallet, amount, to_wallet, bill=None) -> Payment:
@@ -118,10 +125,20 @@ class PaymentFactory:
             raise ValueError("❌ Invalid payment type")
 class TransactionOperation:
     """ To apply any operation send, receive, donate, bill pay """
-    def __init__(self, from_user, to_user):
+    def __init__(self, from_user, to_phone):
         self.from_wallet = from_user
-        self.to_wallet = to_user
+        self.to_phone = to_phone
 
+        try:
+            self.to_user = User.objects.get(phone_number=self.to_phone)
+        except User.DoesNotExist:
+            raise ValidationError("❌ Target user not found.")
+
+        try:
+            self.from_wallet = Wallet.objects.get(user=self.from_user)
+            self.to_wallet = Wallet.objects.get(user=self.to_user)
+        except Wallet.DoesNotExist:
+            raise ValidationError("❌ One of the users has no wallet.")
     def execute_transaction(self, payment_type, amount, bill=None):       
         payment: Payment = PaymentFactory.create_payment(payment_type, self.from_wallet, amount, self.to_wallet, bill)
         msg = payment.execute()
