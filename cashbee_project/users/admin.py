@@ -11,8 +11,8 @@ class FamilyAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('name', 'phone_number', 'national_id', 'role', 'family','failed_attempts','wallet_link')
-    search_fields = ('name', 'phone_number', 'national_id')
+    list_display = ('username', 'first_name', 'last_name', 'phone_number', 'national_id', 'role', 'family','failed_attempts','wallet_link')
+    search_fields = ('username','phone_number', 'national_id')
     list_filter = ('role',)
     def wallet_link(self, obj):
         if obj.wallet:
