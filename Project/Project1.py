@@ -3,7 +3,8 @@ from data import *
 from person import *
 from person_handling import FamilyFacade, RegistrationFacade, RoleManager, UserHandling
 from postgres import PostgresSQl
-from enums import BillOrganization, CharityOrganization, AppllicationDisplay, PaymentType, RequestType, Role
+from enums import BillOrganization, CharityOrganization, PaymentType, RequestType, Role
+from AppllicationDisplay import *
 from mappers import *
 from pay import *
 
@@ -14,60 +15,60 @@ def main():
     user_session = UserSession()
     
     while True:
-        print(AppllicationDisplay.STARTING_APPLICATION.value)
+        print(STARTING_APPLICATION)
         if user_session.get_user() is None:
-            print(AppllicationDisplay.GET_USER_MESSAGE.value)            
+            print(GET_USER_MESSAGE)            
             try:
-                choice = input(AppllicationDisplay.SELECTING_OPTION.value).strip()
+                choice = input(SELECTING_OPTION).strip()
             except (EOFError, KeyboardInterrupt):
-                print(AppllicationDisplay.INVALID_OPERATIION.value)
+                print(INVALID_OPERATIION)
                               
             if choice == "1":
                 # Registration use case
-                print(AppllicationDisplay.Registration.value)
+                print(Registration)
                 try:
-                    phone = input(AppllicationDisplay.PHONE_NUMBER.value).strip()
-                    national_id = input(AppllicationDisplay.NATIONAL_ID.value).strip()
-                    name = input(AppllicationDisplay.NAME.value).strip()
-                    password = input(AppllicationDisplay.PASSWORD.value).strip()                
+                    phone = input(PHONE_NUMBER).strip()
+                    national_id = input(NATIONAL_ID).strip()
+                    name = input(NAME).strip()
+                    password = input(PASSWORD).strip()                
                     user = User(phone,national_id,name, password,Role.USER)       
                     result = registration.register_user(user)
                     print(result)
                 except (EOFError, KeyboardInterrupt):
-                    print(AppllicationDisplay.OPERATION_CANCELLED.value)
+                    print(OPERATION_CANCELLED)
                     
             elif choice == "2":
                 # Login use case
-                print(AppllicationDisplay.LOGIN.value)
+                print(LOGIN)
                 try:
-                    phone = input(AppllicationDisplay.PHONE_NUMBER.value).strip()
-                    password = input(AppllicationDisplay.PASSWORD.value).strip()                
+                    phone = input(PHONE_NUMBER).strip()
+                    password = input(PASSWORD).strip()                
                     result = registration.login_user(phone, password)
                     print(result)                    
                 except (EOFError, KeyboardInterrupt):
-                    print(AppllicationDisplay.OPERATION_CANCELLED.value)                    
+                    print(OPERATION_CANCELLED)                    
             elif choice == "3":
-                print(AppllicationDisplay.CLOSING_APPLICATION.value)
+                print(CLOSING_APPLICATION)
                 break
             else:
-                print(AppllicationDisplay.INVALID_OPERATIION.value)
+                print(INVALID_OPERATIION)
         else:
             current_user = user_session.get_user()
             print(f"Welcome, {current_user.name} ({current_user.role})!")
-            print(AppllicationDisplay.MAIN_OPERATIONS_APPLIED.value)
-            if current_user.role == Role.PARENT.value:
-                print(AppllicationDisplay.PARENTOPERATIONS.value+"6. "+AppllicationDisplay.LOGOUT.value)
+            print(MAIN_OPERATIONS_APPLIED)
+            if current_user.role == Role.PARENT:
+                print(PARENTOPERATIONS+"6. "+LOGOUT)
             else:
-                print("5. "+AppllicationDisplay.LOGOUT.value)
+                print("5. "+LOGOUT)
             try:
-                choice = input(AppllicationDisplay.SELECTING_OPTION.value).strip()
+                choice = input(SELECTING_OPTION).strip()
             except (EOFError, KeyboardInterrupt):
-                print(AppllicationDisplay.INVALID_OPERATIION.value)
+                print(INVALID_OPERATIION)
                 continue
             if choice == "1":
                 print(WalletRepresentation.display(current_user.wallet))
             elif choice == "2":
-                print(AppllicationDisplay.MAKE_TRANSACTION.value)
+                print(MAKE_TRANSACTION)
 
                 try:
                     tx_choice = input("Choose transaction type: ").strip()
@@ -118,13 +119,13 @@ def main():
                         print("Available charities:")
                         charities = list(CharityOrganization)
                         for i, charity in enumerate(charities, 1):
-                            print(f"{i}. {charity.value}")
+                            print(f"{i}. {charity}")
 
                         charity_choice = int(input("Choose charity: ").strip()) - 1
                         if 0 <= charity_choice < len(charities):
                             selected_charity = charities[charity_choice]
                             tx_operation = TransactionOperation(current_user,db_handler)
-                            result = tx_operation.execute_transaction(PaymentType.DONATE, amount, selected_charity.value)
+                            result = tx_operation.execute_transaction(PaymentType.DONATE, amount, selected_charity)
                             print(result)
                         else:
                             print("❌ Invalid charity selection")
@@ -134,22 +135,22 @@ def main():
                         print("Available bill organizations:")
                         orgs = list(BillOrganization)
                         for i, org in enumerate(orgs, 1):
-                            print(f"{i}. {org.value}")
+                            print(f"{i}. {org}")
 
                         org_choice = int(input("Choose organization: ").strip()) - 1
                         if 0 <= org_choice < len(orgs):
                             selected_org = orgs[org_choice]
                             tx_operation = TransactionOperation(current_user,db_handler)
-                            result = tx_operation.execute_transaction(PaymentType.BILL_PAY, amount, selected_org.value)
+                            result = tx_operation.execute_transaction(PaymentType.BILL_PAY, amount, selected_org)
                             print(result)
                         else:
                             print("❌ Invalid organization selection")
 
                     else:
-                        print(AppllicationDisplay.INVALID_TRANSCTION.value)
+                        print(INVALID_TRANSCTION)
 
                 except (ValueError, EOFError, KeyboardInterrupt):
-                    print(AppllicationDisplay.INVALID_OPERATIION.value)
+                    print(INVALID_OPERATIION)
 
             elif choice == "3":
                 # View Transaction History use case
@@ -157,9 +158,9 @@ def main():
 
             elif choice == "4":
                 # Change Role use case
-                print(AppllicationDisplay.CHANGE_RULE_BLOCK.value)
+                print(CHANGE_RULE_BLOCK)
                 try:
-                    role_choice = input(AppllicationDisplay.SELECTING_NEW_RULE.value).strip()
+                    role_choice = input(SELECTING_NEW_RULE).strip()
                     if role_choice == "1":
                         role = Role.USER
                     elif role_choice == "2":
@@ -171,47 +172,47 @@ def main():
                     print(result)
 
                 except (EOFError, KeyboardInterrupt):
-                    print(AppllicationDisplay.OPERATION_CANCELLED.value)
+                    print(OPERATION_CANCELLED)
             elif choice == "5":
-                if current_user.role == Role.PARENT.value:
+                if current_user.role == Role.PARENT:
                     # Family Wallet Operations use case (for parents only)
                     family_ops = FamilyFacade(user_session)
                     if not current_user.family_id:
                         print("No family wallet found. Creating one...")
                         fname = input("Enter family name: ").strip()
                         family_ops.create_family(fname)
-                    print(AppllicationDisplay.FAMILY_BLOCK.value)
+                    print(FAMILY_BLOCK)
                     try:
                         family_choice = input("Choose option: ").strip()
                         if family_choice == "1":
                             # Add family member - enhanced to handle both existing and new users
                             print("\n--- Add Family Member ---")
                             # Add existing user
-                            member_phone = input(AppllicationDisplay.PHONE_NUMBER.value).strip()
-                            member_name = input(AppllicationDisplay.NAME.value).strip()
-                            member_nid = input(AppllicationDisplay.NATIONAL_ID.value)
-                            member_password = input(AppllicationDisplay.PASSWORD.value)
-                            initial_limit = float(input(AppllicationDisplay.INITIAL_SPENDING_LIMIT.value).strip())
+                            member_phone = input(PHONE_NUMBER).strip()
+                            member_name = input(NAME).strip()
+                            member_nid = input(NATIONAL_ID)
+                            member_password = input(PASSWORD)
+                            initial_limit = float(input(INITIAL_SPENDING_LIMIT).strip())
                             user = User(member_phone,member_nid,member_name, member_password,role=Role.CHILD)       
                             result = family_ops.create_child_account(user,maxlimit=initial_limit)
                             print(result)
 
                         elif family_choice == "2":
                             # View member info
-                            member_phone = input(AppllicationDisplay.PHONE_NUMBER.value).strip()
+                            member_phone = input(PHONE_NUMBER).strip()
                             info = family_ops.get_member_info(member_phone)
                             print(info)
 
                         elif family_choice == "3":
                             # Set spending limit
-                            member_phone = input(AppllicationDisplay.PHONE_NUMBER.value).strip() 
+                            member_phone = input(PHONE_NUMBER).strip() 
                             new_limit = float(input("New max limit: ").strip())
                             result = family_ops.set_max_limit(member_phone, new_limit)
                             print(result)
 
                         elif family_choice == "4":
                             # View member transaction history
-                            member_phone = input(AppllicationDisplay.PHONE_NUMBER.value).strip()
+                            member_phone = input(PHONE_NUMBER).strip()
                             result = family_ops.see_transactions(member_phone)
                             print(result)
 
@@ -234,17 +235,17 @@ def main():
                         else:
                             print("Invalid option")
                     except (ValueError, EOFError, KeyboardInterrupt):
-                        print(AppllicationDisplay.INVALID_OPERATIION.value)
+                        print(INVALID_OPERATIION)
                 else:
                     # Logout for non-parent users
                     user_session.clear_user()
-                    print(AppllicationDisplay.LOGOUTMSG.value)        
+                    print(LOGOUTMSG)        
             elif choice == "6" and current_user.role == Role.PARENT:
                 # Logout use case for parents
                 user_session.clear_user()
-                print(AppllicationDisplay.LOGOUTMSG.value)
+                print(LOGOUTMSG)
 
             else:
-                print(AppllicationDisplay.INVALID_OPERATIION.value)
+                print(INVALID_OPERATIION)
 if __name__ == "__main__":
     main()

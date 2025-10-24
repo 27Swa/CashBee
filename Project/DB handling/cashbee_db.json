@@ -1,0 +1,58 @@
+{
+    "users": [
+        {
+            "name": "Sondos Wael",
+            "phone_number": "01009710356",
+            "national_id": "30305270101062",
+            "password": "So@1234567",
+            "role": "Parent",
+            "walletid": 1,
+            "family_wallet_id": 1,
+            "failed_attempts": 0,
+            "lock_until": null
+        },
+        {
+            "name": "Nour Mohamed",
+            "phone_number": "01009710555",
+            "national_id": "31305270101062",
+            "password": "No@1234567",
+            "role": "Child",
+            "walletid": 5,
+            "family_wallet_id": 1,
+            "failed_attempts": 0,
+            "lock_until": null
+        }
+    ],
+    "wallets": [
+        {
+            "wallet_id": 1,
+            "balance": 10000000,
+            "transaction_limit": 500,
+            "max_limit": 315000,
+            "money_spend": 0
+        },
+        {
+            "wallet_id": 5,
+            "balance": 0,
+            "transaction_limit": 500,
+            "max_limit": 990.0,
+            "money_spend": 0
+        }
+    ],
+    "family_wallets": [
+        {
+            "family_id": 1,
+            "parent_phone": "01009710356",
+            "members": [
+                "31305270101062"
+            ]
+        }
+    ],
+    "organizations": [],
+    "transactions": [],
+    "counters": {
+        "transaction_id": 0,
+        "wallet_id": 5,
+        "family_wallet_id": 1
+    }
+}
