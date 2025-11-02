@@ -3,6 +3,7 @@ from .models import User,Family,UsersRole
 from .validations import ValidationCheck  
 from django.utils.timezone import now
 from datetime import timedelta
+from django.forms import ValidationError
 
 class RegistrationFacade:
 
@@ -64,7 +65,7 @@ class RoleManager:
 
     @staticmethod
     def can_change_to_parent(user: User) -> tuple[bool, str]:
-        from Validations import AgeCalculation
+        from .validations import AgeCalculation
         try:
             age = AgeCalculation.calculate_age_from_nid(user.national_id)
         except:
@@ -81,13 +82,13 @@ class RoleManager:
     @staticmethod
     def change_user_role(user: User, new_role: str) -> str:
         if new_role == user.role:
-            return "You already have this role!"
+            raise ValueError ("You already have this role!")
 
         if new_role == UsersRole.PARENT:
             can_change, message = RoleManager.can_change_to_parent(user)
             if not can_change:
-                return f"❌ Cannot change to parent: {message}"
-
+                raise ValidationError( "❌ Cannot change to parent: {message}"
+)
         user.role = new_role
         user.save()
         return f"✅ Role changed to {new_role} successfully"
@@ -108,7 +109,8 @@ class FamilyFacade:
             return "❌ Child account already exists"
 
         child = User.objects.create(
-            name=child_data["name"],
+            first_name =child_data["first_name"],
+            last_name = child_data['last_name'],
             phone_number=child_data["phone_number"],
             national_id=child_data["national_id"],
             role= UsersRole.CHILD,

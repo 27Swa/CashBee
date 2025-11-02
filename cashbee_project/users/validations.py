@@ -50,7 +50,7 @@ class NationalIDValidationStrategy(ValidationStrategy):
             age = AgeCalculation.calculate_age_from_nid(nid)
         except:
             return False
-        return age > 18
+        return age >= 18
 
     def get_error_message(self) -> str:
         return "Invalid National ID or under 18 years old"
@@ -84,7 +84,7 @@ class PhoneValidationStrategy(ValidationStrategy):
 
 class PasswordValidationStrategy(ValidationStrategy):
     def is_valid(self, password) -> bool:
-        if len(password) != 10:
+        if len(password) < 10:
             return False
         if not re.search(RegexPattern.LOWERCASE_ENGLISH.value, password):
             return False

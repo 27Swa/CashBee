@@ -7,6 +7,7 @@ from django.db import models
 from django.forms import ValidationError
 from .validations import ValidationCheck  
 from wallet.models import Wallet
+import uuid
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -36,7 +37,7 @@ class UsersRole(models.TextChoices):
     USER = "User", "User"
 
 class Family(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50,blank=False)
     def __str__(self):
         return self.name
     class Meta:
@@ -51,7 +52,7 @@ class User(AbstractUser):
     family = models.ForeignKey(Family, on_delete=models.SET_NULL, null=True, blank=True)
     failed_attempts = models.IntegerField(default=0)  
     lock_time = models.DateTimeField(null=True, blank=True)
-    wallet = models.OneToOneField(Wallet,on_delete=models.PROTECT,null=True,blank=True)
+    wallet = models.OneToOneField(Wallet,on_delete=models.PROTECT,null=True,blank=True, related_name='wallet_owner')
     
     USERNAME_FIELD = 'national_id'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'phone_number']
@@ -61,7 +62,12 @@ class User(AbstractUser):
         verbose_name = "Person"
         verbose_name_plural = "People"
         db_table = 'Person' 
-
+        constraints = [
+            models.UniqueConstraint(fields=['phone_number'], name='unique_phone_number'),
+            models.UniqueConstraint(fields=['national_id'], name='unique_national_id'),
+            models.CheckConstraint(check=models.Q(role__in=[choice[0] for choice in UsersRole.choices]), name='valid_user_role'),
+            models.CheckConstraint(check=models.Q(phone_number__regex=r'^01\d{9}$'), name='valid_phone_regex'),
+        ]
     def __str__(self):
         return self.name
     def clean(self):
@@ -78,4 +84,9 @@ class User(AbstractUser):
     @property
     def name(self):
         return self.first_name +" "+self.last_name
+    def save(self, *args, **kwargs):
+        if not self.username:
+            self.username = f"{self.first_name}_{uuid.uuid4().hex[:8]}"
+        super().save(*args, **kwargs)
+
 
