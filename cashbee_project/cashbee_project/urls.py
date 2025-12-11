@@ -8,7 +8,6 @@ from users import auth_views as auth_views
 
 router = DefaultRouter()
 router.register(r'users', user_views.UserViewSet)
-router.register(r'wallets', wallet_views.WalletViewSet)
 router.register(r'transactions', transaction_views.TransactionViewSet)
 router.register(r"collection-requests", transaction_views.CollectionRequestViewSet, basename="collection-request")
 router.register(r'children', user_views.ChildViewSet, basename='child')
@@ -19,4 +18,7 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/signup/', auth_views.SignupView.as_view(), name='signup'),
     path('api/login/', auth_views.LoginView.as_view(), name='login'),
+    path('wallets', wallet_views.WalletViewSet.as_view(), name='my-wallet'),
+    path('limits/my/', wallet_views.PersonalLimitView.as_view(), name='my-limit'),
+
 ]

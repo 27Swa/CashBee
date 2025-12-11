@@ -16,11 +16,13 @@ class SignupView(generics.CreateAPIView):
         return Response({
             "message": "✅ Account created successfully",
             "user": {
-                "national_id": user.national_id,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
-                "phone_number": user.phone_number,
+                "phone_number": str(user.phone_number),
+                "email": user.email,
+                "date_of_birth": user.date_of_birth,
                 "role": user.role,
+                "username": user.username
             }
         }, status=status.HTTP_201_CREATED)
 
@@ -37,22 +39,24 @@ class LoginView(generics.GenericAPIView):
         try:
             user = data.get("user")
             token = data.get("token")
+            
             if user is not None:
-                    
                 return Response({
                     "message": "✅ Login successful!",
                     "user": {
-                        "national_id": user.national_id,
                         "name": user.name,
+                        "phone_number": str(user.phone_number),
                         "role": user.role,
+                        "date_of_birth": user.date_of_birth,
+                        "username": user.username
                     },
                     "token": token,
                 }, status=status.HTTP_200_OK)
             else:
-                    return Response({
-                        "error": "❌ Invalid password"
-                    }, status=status.HTTP_400_BAD_REQUEST)
-                    
+                return Response({
+                    "error": "❌ Invalid credentials"
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
         except User.DoesNotExist:
             return Response({
                 "error": "❌ User not found"

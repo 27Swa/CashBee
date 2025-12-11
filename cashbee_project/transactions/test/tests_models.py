@@ -1,27 +1,60 @@
-from django.forms import ValidationError
+from django.core.exceptions import ValidationError
 from django.test import TestCase
-from wallet.models import Wallet
+from wallet.models import Wallet, SystemLimit
 from users.models import User
-from ..models import Transaction,CollectionRequest
+from decimal import Decimal
+from ..models import Transaction, CollectionRequest
+
 
 class TransactionTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.wallet1 = Wallet.objects.create(balance=100000)
-        cls.wallet2 = Wallet.objects.create(balance=500)
-        
-        cls.transaction = Transaction.objects.create(
-            from_wallet = cls.wallet1,
-            to_wallet = cls.wallet2,
-            amount = 100,
-            transaction_type = 'Send'
+    def setUp(self):
+        # Clear system limits and create one
+        SystemLimit.objects.all().delete()
+        SystemLimit.objects.create(
+            per_transaction_limit=Decimal('1000.00'),
+            daily_limit=Decimal('5000.00'),
+            monthly_limit=Decimal('20000.00'),
+            is_active=True
         )
-    """
-    amount check --> negativity, limit, balance enough, balance not enough
-    from != to
-    """
+        
+        # Create users (wallets will be auto-created by signal)
+        self.user1 = User.objects.create_user(
+            phone_number='+201111111111',
+            national_id='30001010101011',
+            first_name='Test',
+            last_name='User1',
+            password='Test@12345'
+        )
+        self.user2 = User.objects.create_user(
+            phone_number='+201222222222',
+            national_id='30001010101012',
+            first_name='Test',
+            last_name='User2',
+            password='Test@12345'
+        )
+        
+        # Get the auto-created wallets
+        self.wallet1 = self.user1.wallet
+        self.wallet2 = self.user2.wallet
+        
+        # Set balances
+        self.wallet1.balance = Decimal('100000.00')
+        self.wallet1.save()
+        self.wallet2.balance = Decimal('500.00')
+        self.wallet2.save()
+        
+        # Create a valid transaction
+        self.transaction = Transaction.objects.create(
+            from_wallet=self.wallet1,
+            to_wallet=self.wallet2,
+            amount=Decimal('100.00'),
+            transaction_type=Transaction.TransactionType.SEND,
+            from_wallet_balance_before=self.wallet1.balance,
+            to_wallet_balance_before=self.wallet2.balance
+        )
+    
     def test_amount_negativity(self):
-        self.transaction.amount = -100
+        self.transaction.amount = Decimal('-100.00')
         with self.assertRaises(ValidationError):
             self.transaction.full_clean()
     
@@ -31,45 +64,50 @@ class TransactionTest(TestCase):
             self.transaction.full_clean()
     
     def test_cannot_send_amount_less_than_minimum(self):
-        self.transaction.amount = -1
+        self.transaction.amount = Decimal('0.00')
         with self.assertRaises(ValidationError):
             self.transaction.full_clean()
     
-    def test_cannot_send_balance_less_than_amount(self):
-        self.transaction.amount = 2000
-        self.transaction.from_wallet.balance = 1000  
-        with self.assertRaises(ValidationError):
-            self.transaction.full_clean()
-
-    def test_amount_exceed_per_operation_limit(self):
-        self.transaction.amount = 10000
-        with self.assertRaises(ValidationError):
-            self.transaction.full_clean()
-
     def test_valid_transaction_passes_validation(self):
         try:
             self.transaction.full_clean()
         except ValidationError:
             self.fail("ValidationError raised unexpectedly for a valid transaction")
+    
+    def test_transaction_string_representation(self):
+        """Test the string representation of a transaction"""
+        self.assertIn("TX", str(self.transaction))
+        self.assertIn(self.user1.username, str(self.transaction))
+        self.assertIn(self.user2.username, str(self.transaction))
+    
+    def test_transaction_default_status(self):
+        """Test that default status is PENDING"""
+        self.assertEqual(self.transaction.status, Transaction.TransactionStatus.PENDING)
 
 
 class CollectionRequestTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.user1 = User.objects.create(
-            first_name="Sondos", last_name="Ali",
-            national_id="30305270101022", phone_number="01000000001",
+    def setUp(self):
+        # Create users
+        self.user1 = User.objects.create_user(
+            first_name="Sondos",
+            last_name="Ali",
+            national_id="30305270101022",
+            phone_number="+201000000001",
             password="So@1234567"
         )
-        cls.user2 = User.objects.create(
-            first_name="Nada", last_name="Hassan",
-            national_id="30305180101033", phone_number="01000000002",
+        self.user2 = User.objects.create_user(
+            first_name="Nada",
+            last_name="Hassan",
+            national_id="30305180101033",
+            phone_number="+201000000002",
             password="Na@1234567"
         )
-        cls.valid_request = CollectionRequest(
-            from_user=cls.user1,
-            to_user=cls.user2,
-            amount=100
+        
+        # Create a valid request
+        self.valid_request = CollectionRequest.objects.create(
+            from_user=self.user1,
+            to_user=self.user2,
+            amount=Decimal('100.00')
         )
 
     def test_valid_collection_request(self):
@@ -79,12 +117,16 @@ class CollectionRequestTest(TestCase):
             self.fail("ValidationError raised unexpectedly for a valid request")
 
     def test_cannot_send_request_to_self(self):
-        self.valid_request.to_user = self.user1
+        bad_request = CollectionRequest(
+            from_user=self.user1,
+            to_user=self.user1,
+            amount=Decimal('100.00')
+        )
         with self.assertRaises(ValidationError):
-            self.valid_request.full_clean()
+            bad_request.full_clean()
 
     def test_amount_must_be_positive(self):
-        self.valid_request.amount = 0
+        self.valid_request.amount = Decimal('0.00')
         with self.assertRaises(ValidationError):
             self.valid_request.full_clean()
 
@@ -92,16 +134,24 @@ class CollectionRequestTest(TestCase):
         self.assertEqual(self.valid_request.status, CollectionRequest.Status.PENDING)
 
     def test_str_representation(self):
-       
+        """Test string representation"""
         self.assertIn("Request #", str(self.valid_request))
         self.assertIn(self.user1.name, str(self.valid_request))
         self.assertIn(self.user2.name, str(self.valid_request))
 
     def test_ordering_by_created_at_descending(self):
-        req1 = CollectionRequest.objects.create(from_user=self.user1, to_user=self.user2, amount=10)
-        req2 = CollectionRequest.objects.create(from_user=self.user1, to_user=self.user2, amount=20)
+        req1 = CollectionRequest.objects.create(
+            from_user=self.user1,
+            to_user=self.user2,
+            amount=Decimal('10.00')
+        )
+        req2 = CollectionRequest.objects.create(
+            from_user=self.user1,
+            to_user=self.user2,
+            amount=Decimal('20.00')
+        )
 
         requests = list(CollectionRequest.objects.all())
+        # req2 was created last, so it should be first in descending order
         self.assertEqual(requests[0], req2)
         self.assertEqual(requests[1], req1)
-

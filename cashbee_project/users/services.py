@@ -1,71 +1,16 @@
 from django.db import IntegrityError
-from .models import User,Family,UsersRole
-from .validations import ValidationCheck  
+from .models import User, Family, UsersRole
 from django.utils.timezone import now
-from datetime import timedelta
-from django.forms import ValidationError
+from django.core.exceptions import ValidationError
+from .validations import AgeCalculation
 
-class RegistrationFacade:
-
-    def register_user(self, user_data: dict):
-        """
-        user_data dict expected keys: 
-        name, phone_number, national_id, password
-        """
-        # check if user already exists
-        if User.objects.filter(national_id=user_data["national_id"]).exists():
-            return "❌ National ID already exists, Go to login"
-
-        try:
-            user = User.objects.create(
-                name=user_data["name"],
-                phone_number=user_data["phone_number"],
-                national_id=user_data["national_id"],
-                role=UsersRole.USER,
-                failed_attempts=0,
-                password = user_data["password"]
-
-            )
-            user.full_clean()
-            user.save()
-        except IntegrityError:
-            return "❌ Phone number or National ID already in use"
-
-        return "✅ Account has been created successfully"
-    def login_user(self, phone, password):
-        try:
-            user = User.objects.get(phone_number=phone)
-        except User.DoesNotExist:
-            return "❌ User does not exist, Sign Up first"
-        # check lock time
-        if user.lock_time and now() < user.lock_time:
-            remaining = (user.lock_time - now()).seconds // 60
-            return f"⛔ Account locked. Try again after {remaining} minutes"
-
-        # check password
-        if not user.check_password(password):   
-            user.failed_attempts += 1
-            if user.failed_attempts >= 3:
-                user.lock_time = now() + timedelta(minutes=30)
-                user.failed_attempts = 0
-                msg = "⛔ Too many failed attempts. Account locked for 30 minutes"
-            else:
-                remaining = 3 - user.failed_attempts
-                msg = f"❌ Invalid password. You have {remaining} attempt(s) left"
-            user.save()
-            return msg
-
-        # successful login
-        user.failed_attempts = 0
-        user.lock_time = None
-        user.save()
-
-        return f"✅ Login successful!"
 class RoleManager:
 
     @staticmethod
     def can_change_to_parent(user: User) -> tuple[bool, str]:
-        from .validations import AgeCalculation
+        if not user.national_id:
+            return False, "National ID is required to become a parent"
+        
         try:
             age = AgeCalculation.calculate_age_from_nid(user.national_id)
         except:
@@ -80,18 +25,20 @@ class RoleManager:
         return True, f"{age} - Eligible to become a parent"
 
     @staticmethod
-    def change_user_role(user: User, new_role: str) -> str:
+    def change_user_role(user: User, new_role: str) -> tuple[bool, str]:
         if new_role == user.role:
-            raise ValueError ("You already have this role!")
+            return False, "You already have this role"
 
         if new_role == UsersRole.PARENT:
             can_change, message = RoleManager.can_change_to_parent(user)
             if not can_change:
-                raise ValidationError( "❌ Cannot change to parent: {message}"
-)
+                return False, f"Cannot change to parent: {message}"
+
         user.role = new_role
-        user.save()
-        return f"✅ Role changed to {new_role} successfully"
+        user.save(skip_validation=True)
+        return True, f"✅ Role changed to {new_role} successfully"
+
+
 class FamilyFacade:
 
     def __init__(self, user: User):
@@ -101,30 +48,55 @@ class FamilyFacade:
     def create_family(self, fname):
         family = Family.objects.create(name=fname)
         self.user.family = family
-        self.user.save()
-        return "Family wallet created successfully!"
+        self.user.save(skip_validation=True)
+        return "Family created successfully!"
     
     def create_child_account(self, child_data: dict):
-        if User.objects.filter(national_id=child_data["national_id"]).exists():
-            return "❌ Child account already exists"
+        phone = child_data.get("phone_number")
+        national_id = child_data.get("national_id")
+        
+        if User.objects.filter(phone_number=phone).exists():
+            raise ValidationError("Phone number already registered")
+        
+        if national_id and User.objects.filter(national_id=national_id).exists():
+            raise ValidationError("❌ Child account with this National ID already exists")
 
-        child = User.objects.create(
-            first_name =child_data["first_name"],
-            last_name = child_data['last_name'],
-            phone_number=child_data["phone_number"],
-            national_id=child_data["national_id"],
-            role= UsersRole.CHILD,
-            family=self.family,
-            password = child_data["password"]
-
+        # Create user with hashed password
+        child = User.objects.create_user(
+            username=None,  # Will be auto-generated
+            first_name=child_data.get("first_name"),
+            last_name=child_data.get("last_name"),
+            phone_number=phone,
+            national_id=national_id,
+            email=child_data.get("email", ""),
+            password=child_data.get("password"),
+            role=UsersRole.CHILD,
+            family=self.family
         )
-        child.full_clean()        
-        child.save()
-
-        return f"✅ Child account created successfully for {child.name}"
+        
+        return child
+    
     def get_family_details(self):
-        members = User.objects.filter(family=self.user.family)
-        result = f"Family: {self.user.family.name}\n"
-        for member in members:
-            result += f"- {member.name} ({member.role})\n"
+        """Get formatted family details"""
+        if not self.family:
+            return "User is not part of any family"
+        
+        members = User.objects.filter(family=self.family)
+        result = f"Family: {self.family.name}\n"
+        result += f"Total Members: {members.count()}\n\n"
+        
+        # List parents
+        parents = members.filter(role=UsersRole.PARENT)
+        if parents.exists():
+            result += "Parents:\n"
+            for parent in parents:
+                result += f"  - {parent.name} ({parent.phone_number})\n"
+        
+        # List children
+        children = members.filter(role=UsersRole.CHILD)
+        if children.exists():
+            result += "\nChildren:\n"
+            for child in children:
+                result += f"  - {child.name} ({child.phone_number})\n"
+        
         return result

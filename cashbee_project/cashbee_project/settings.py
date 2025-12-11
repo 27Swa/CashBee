@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'transactions',
     'users',
     'wallet',
+    'scripts',
     'django_filters',
     'django.contrib.admin',
     'django.contrib.auth',  
@@ -84,13 +85,13 @@ WSGI_APPLICATION = 'cashbee_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cashbee',         # اسم القاعدة الجديدة
-        'USER': 'postgres',            # مستخدم PostgreSQL
-        'PASSWORD': 'So@1234',   # كلمة المرور
+        'NAME': 'cashbee',        
+        'USER': 'postgres',            
+        'PASSWORD': 'So@1234',   
         'HOST': 'localhost',
         'PORT': '5432',
         'TEST': {
-            'NAME': 'cashbee_test_db',  # db for tests
+            'NAME': 'cashbee_test_db', 
         }
     }
 

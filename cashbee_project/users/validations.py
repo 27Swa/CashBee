@@ -6,7 +6,6 @@ from phonenumbers import NumberParseException
 import phonenumbers
 
 class ValidationStrategy(ABC):
-
     @abstractmethod
     def is_valid(self, value) -> bool:
         pass
@@ -14,36 +13,42 @@ class ValidationStrategy(ABC):
     @abstractmethod
     def get_error_message(self) -> str:
         pass
-
 class AgeCalculation:
     @staticmethod
-    def calculate_age_from_nid(nid):
+    def extract_date_of_birth(nid):
+        """Extract date of birth from Egyptian National ID"""
         if len(nid) != 14 or not nid.isdigit():
-            raise ValueError("Invalid national id")
+            raise ValueError("Invalid national ID format")
+        
         century_digit = int(nid[0])
         if century_digit not in [2, 3]:
-            raise ValueError("Invalid national id")
+            raise ValueError("Invalid century digit in national ID")
 
         year = int(nid[1:3])
         month = int(nid[3:5])
         day = int(nid[5:7])
 
-        if century_digit == 2:
-            year += 1900
-        else:
-            year += 2000
+        year += 1900 if century_digit == 2 else 2000
 
         try:
-            date(year, month, day)
+            return date(year, month, day)
         except ValueError:
-            raise ValueError("Invalid National ID")
-            
+            raise ValueError("Invalid date in national ID")
+    
+    @staticmethod
+    def calculate_age_from_nid(nid):
+        """Calculate age from National ID"""
+        dob = AgeCalculation.extract_date_of_birth(nid)
+        return AgeCalculation.calculate_age_from_dob(dob)
+    
+    @staticmethod
+    def calculate_age_from_dob(dob):
+        """Calculate age from date of birth"""
         today = date.today()
-        age = today.year - year
-        if (today.month, today.day) < (month, day):
+        age = today.year - dob.year
+        if (today.month, today.day) < (dob.month, dob.day):
             age -= 1
         return age
-
 class NationalIDValidationStrategy(ValidationStrategy):
     def is_valid(self, nid) -> bool:
         try:
@@ -99,15 +104,6 @@ class PasswordValidationStrategy(ValidationStrategy):
     def get_error_message(self) -> str:
         return "Password must be 10 characters with uppercase, lowercase, number, and special character"
 
-class EnglishNameValidationStrategy(ValidationStrategy):
-
-    def is_valid(self, val) -> bool:
-        pattern = rf"^{RegexPattern.UPPERCASE_ENGLISH.value}{RegexPattern.LOWERCASE_ENGLISH.value}+ {RegexPattern.UPPERCASE_ENGLISH.value}{RegexPattern.LOWERCASE_ENGLISH.value}+$"
-        return bool(re.fullmatch(pattern, val))
-
-    def get_error_message(self) -> str:
-        return "Name must contain exactly two English words, each starting with a capital letter"
-
 class ValidatorContext:
 
     def __init__(self, strategy: ValidationStrategy):
@@ -121,25 +117,7 @@ class ValidatorContext:
         
     def get_error(self) -> str:
         return self._strategy.get_error_message()
-
-class ValidationCheck:
-
-    def __init__(self,name,phone,password,national_id,child = False):
-        if child:
-            x = ValidationsNames.NATIONALIDCHILD.value
-        else:
-            x = ValidationsNames.NATIONALIDUSER.value
-        self.validation_checks = [
-            (name, ValidationsNames.NAME.value),
-            (phone, ValidationsNames.PHONE.value),
-            (password, ValidationsNames.PASSWORD.value),
-            (national_id, x)
-        ]
-    def check(self):  
-        for value, validator in self.validation_checks:
-            if not validator.validate(value):
-                return f"❌ {validator.get_error()}"
-            
+              
 class RegexPattern(Enum):
     """
         Regular expressions are used when handling password and user name
@@ -148,12 +126,3 @@ class RegexPattern(Enum):
     UPPERCASE_ENGLISH = r"[A-Z]"
     NUMBERS = r"[0-9]+"
     SPECIAL_CHARACTERS = r"[!@#$%^&*(),.?\":{}|<>]"
-class ValidationsNames(Enum):
-    """ 
-        Used when handling data entered by the user (used in signup and login)
-    """
-    NAME = ValidatorContext(EnglishNameValidationStrategy())
-    PHONE = ValidatorContext(PhoneValidationStrategy())
-    PASSWORD = ValidatorContext(PasswordValidationStrategy())
-    NATIONALIDUSER = ValidatorContext(NationalIDValidationStrategy())
-    NATIONALIDCHILD = ValidatorContext(ChildNationalIDValidationStrategy())
