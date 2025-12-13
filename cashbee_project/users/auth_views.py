@@ -48,7 +48,9 @@ class LoginView(generics.GenericAPIView):
                         "phone_number": str(user.phone_number),
                         "role": user.role,
                         "date_of_birth": user.date_of_birth,
-                        "username": user.username
+                        "username": user.username,
+                        "is_staff": user.is_staff,                          # ⭐ ADD THIS
+                        "is_superuser": user.is_superuser,
                     },
                     "token": token,
                 }, status=status.HTTP_200_OK)

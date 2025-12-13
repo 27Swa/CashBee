@@ -10,13 +10,192 @@ from rest_framework import status
 from .services import RoleManager, FamilyFacade
 from django.core.exceptions import ValidationError
 from wallet.serializers import WalletSerializer
+from django.db.models import Q
 
 class UserViewSet(viewsets.ModelViewSet):
     """ViewSet for managing user accounts and family operations"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
-   
+    
+    def list(self, request):
+        """
+        List all users (Admin only)
+        Supports filtering and searching
+        """
+        # Check if user is admin
+        if not (request.user.is_staff or request.user.is_superuser):
+            return Response(
+                {"error": "❌ Admin privileges required"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get all users with related data
+        users = User.objects.all().select_related('family').prefetch_related('wallet')
+        
+        # Filter by role if provided
+        role = request.query_params.get('role', None)
+        if role:
+            users = users.filter(role=role)
+        
+        # Filter by active status if provided
+        is_active = request.query_params.get('is_active', None)
+        if is_active is not None:
+            is_active_bool = is_active.lower() == 'true'
+            users = users.filter(is_active=is_active_bool)
+        
+        # Search functionality
+        search = request.query_params.get('search', None)
+        if search:
+            users = users.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(username__icontains=search) |
+                Q(email__icontains=search) |
+                Q(phone_number__icontains=search) |
+                Q(national_id__icontains=search)
+            )
+        
+        # Order by most recent first
+        users = users.order_by('-date_joined')
+        
+        serializer = self.get_serializer(users, many=True)
+        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def destroy(self, request, *args, **kwargs):
+        """
+        Soft delete - Deactivate user instead of deleting
+        This preserves transaction history and data integrity
+        """
+        try:
+            # 1. Check permissions
+            if not (request.user.is_staff or request.user.is_superuser):
+                return Response(
+                    {"error": "❌ Admin privileges required"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # 2. Get user
+            try:
+                user = self.get_object()
+            except User.DoesNotExist:
+                return Response(
+                    {"error": "❌ User not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # 3. Prevent self-deactivation
+            if user.id == request.user.id:
+                return Response(
+                    {"error": "❌ You cannot deactivate your own account"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # 4. Store user info before update
+            username = user.username
+            user_name = user.get_full_name() or user.username
+            
+            # 5. Perform soft delete using direct query (bypasses full validation)
+            affected_rows = User.objects.filter(pk=user.pk).update(is_active=False)
+            
+            if affected_rows == 0:
+                return Response(
+                    {"error": "❌ Failed to update user status"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+            # 6. Refresh and return
+            user.refresh_from_db()
+            
+            return Response({
+                "message": f"✅ User '{user_name}' has been deactivated successfully",
+                "user": {
+                    "id": user.id,
+                    "username": username,
+                    "is_active": user.is_active
+                }
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            # Log the full error for debugging
+            import traceback
+            print("❌ Error in destroy method:")
+            print(traceback.format_exc())
+            
+            return Response(
+                {"error": f"❌ Server error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def update(self, request, *args, **kwargs):
+        """
+        Update user - includes reactivation capability
+        """
+        try:
+            partial = kwargs.pop('partial', False)
+            
+            # Check permissions
+            if not (request.user.is_staff or request.user.is_superuser):
+                return Response(
+                    {"error": "❌ Admin privileges required"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Get user
+            try:
+                instance = self.get_object()
+            except User.DoesNotExist:
+                return Response(
+                    {"error": "❌ User not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Special handling for is_active only updates
+            if 'is_active' in request.data and len(request.data) == 1:
+                is_active = request.data['is_active']
+                User.objects.filter(pk=instance.pk).update(is_active=is_active)
+                instance.refresh_from_db()
+                
+                action = "reactivated" if is_active else "deactivated"
+                user_name = instance.get_full_name() or instance.username
+                
+                return Response({
+                    "message": f"✅ User '{user_name}' has been {action} successfully",
+                    "user": {
+                        "id": instance.id,
+                        "username": instance.username,
+                        "is_active": instance.is_active
+                    }
+                })
+            
+            # For other updates, use serializer
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            
+            return Response(serializer.data)
+            
+        except ValidationError as e:
+            return Response(
+                {"error": f"❌ Validation error: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            import traceback
+            print("❌ Error in update method:")
+            print(traceback.format_exc())
+            
+            return Response(
+                {"error": f"❌ Server error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Partial update (PATCH)"""
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
+
     @action(detail=False, methods=['get'])
     def profile(self, request):
         """Get current user's profile"""
@@ -63,7 +242,7 @@ class UserViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             
-            # 6) Create the family
+            # Create the family
             family = serializer.save()
 
             user.refresh_from_db()
@@ -179,6 +358,46 @@ class UserViewSet(viewsets.ModelViewSet):
                 {"error": f"⛔ {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+    
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated], url_path='change-password')
+    def change_password(self, request):
+        """
+        Change password for the authenticated user
+        """
+        user = request.user
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+
+        # Validate input
+        if not old_password or not new_password:
+            return Response(
+                {'error': 'Both old_password and new_password are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verify old password
+        if not user.check_password(old_password):
+            return Response(
+                {'error': 'Current password is incorrect'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate new password
+        if len(new_password) < 8:
+            return Response(
+                {'error': 'New password must be at least 8 characters long'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Set new password
+        user.set_password(new_password)
+        # Use update_fields to skip full_clean validation
+        user.save(update_fields=['password'])  # 👈 ADD update_fields parameter
+
+        return Response(
+            {'message': 'Password changed successfully'},
+            status=status.HTTP_200_OK
+        )
 class ChildViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing children accounts.

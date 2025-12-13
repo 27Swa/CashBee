@@ -17,11 +17,13 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
+            'id','username', 'is_staff', 'date_joined',
+            'is_superuser',   
             'national_id', 'name', 'first_name', 'last_name',
             'phone_number', 'email', 'role', 'family', 'family_name',
             'wallet_id', 'wallet_balance', 'is_active', 'date_of_birth'
         ]
-        read_only_fields = ['role', 'family', 'family_name', 'wallet_id', 'wallet_balance']
+        read_only_fields = ['role', 'family', 'family_name', 'wallet_id', 'wallet_balance','username']
 
 
 class ChildSerializer(serializers.ModelSerializer):

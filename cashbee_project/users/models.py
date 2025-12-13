@@ -131,9 +131,12 @@ class User(AbstractUser):
                 raise ValidationError(f"Invalid National ID: {e}")
 
     def save(self, *args, **kwargs):
-        # Only call full_clean if this is not being called from create_user
-        # (create_user handles password hashing and validation)
-        if not kwargs.pop('skip_validation', False):
+        # Skip validation if update_fields is specified (like when only updating password)
+        skip_validation = kwargs.pop('skip_validation', False)
+        update_fields = kwargs.get('update_fields', None)
+        
+        # Only run full_clean if not skipping validation and not updating specific fields
+        if not skip_validation and update_fields is None:
             self.full_clean()
         
         super().save(*args, **kwargs)

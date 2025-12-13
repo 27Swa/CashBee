@@ -18,7 +18,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/signup/', auth_views.SignupView.as_view(), name='signup'),
     path('api/login/', auth_views.LoginView.as_view(), name='login'),
-    path('wallets', wallet_views.WalletViewSet.as_view(), name='my-wallet'),
-    path('limits/my/', wallet_views.PersonalLimitView.as_view(), name='my-limit'),
-
+    path('api/', include('wallet.urls'))
 ]

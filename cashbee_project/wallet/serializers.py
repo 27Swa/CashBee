@@ -55,3 +55,57 @@ class PersonalLimitSerializer(serializers.ModelSerializer):
             })
         
         return data
+class SystemLimitSerializer(serializers.ModelSerializer):
+    """
+    Serializer for System Limits (admin only).
+    NO validation against existing system limits since admins are setting them.
+    Only validates logical consistency between the three limit types.
+    """
+    class Meta:
+        model = SystemLimit
+        fields = ['per_transaction_limit', 'daily_limit', 'monthly_limit', 'is_active']
+    
+    def validate(self, data):
+        """
+        Basic validation for system limits.
+        Only validate logical consistency (per_transaction <= daily <= monthly).
+        NO validation against existing limits - admins can set any value.
+        """
+        instance = self.instance
+        
+        # Get current values or use data
+        per_transaction = data.get('per_transaction_limit', 
+                                   instance.per_transaction_limit if instance else None)
+        daily = data.get('daily_limit', 
+                        instance.daily_limit if instance else None)
+        monthly = data.get('monthly_limit', 
+                          instance.monthly_limit if instance else None)
+        
+        # Validate logical consistency
+        if per_transaction and daily and per_transaction > daily:
+            raise serializers.ValidationError({
+                'per_transaction_limit': "Per transaction limit cannot exceed daily limit."
+            })
+        
+        if daily and monthly and daily > monthly:
+            raise serializers.ValidationError({
+                'daily_limit': "Daily limit cannot exceed monthly limit."
+            })
+        
+        # Ensure all values are positive
+        if per_transaction and per_transaction <= 0:
+            raise serializers.ValidationError({
+                'per_transaction_limit': "Must be greater than 0."
+            })
+        
+        if daily and daily <= 0:
+            raise serializers.ValidationError({
+                'daily_limit': "Must be greater than 0."
+            })
+        
+        if monthly and monthly <= 0:
+            raise serializers.ValidationError({
+                'monthly_limit': "Must be greater than 0."
+            })
+        
+        return data

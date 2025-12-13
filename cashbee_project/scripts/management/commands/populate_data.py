@@ -126,7 +126,10 @@ class Command(BaseCommand):
         """Create 50+ users: admin + parents + children + regular users"""
         
         def build_user(first, last, phone, age, email, password, role, family=None):
+            # Generate username from first and last name
+            username = f"{first.lower()}.{last.lower()}"
             return {
+                'username': username,
                 'first_name': first,
                 'last_name': last,
                 'phone_number': phone,
@@ -240,14 +243,29 @@ class Command(BaseCommand):
         # Create all users
         created_users = []
         for user_data in users_data:
-            user, created = User.objects.get_or_create(
-                national_id=user_data['national_id'],
-                defaults=user_data
-            )
-            if created:
+            # Try to get or create user by national_id
+            try:
+                user = User.objects.get(national_id=user_data['national_id'])
+                created = False
+                self.stdout.write(self.style.WARNING(f"User already exists: {user.name}"))
+            except User.DoesNotExist:
+                # Check if username exists and make it unique if needed
+                base_username = user_data['username']
+                username = base_username
+                counter = 1
+                while User.objects.filter(username=username).exists():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+                
+                user_data['username'] = username
+                
+                # Create new user
+                user = User(**user_data)
                 user.set_password(user_data['password'])
-                user.save()
+                user.save(skip_validation=True)  # Skip validation to avoid issues
+                created = True
                 self.stdout.write(self.style.SUCCESS(f"✓ Created user: {user.name} ({user.role})"))
+            
             created_users.append(user)
         
         return created_users

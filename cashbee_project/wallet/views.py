@@ -1,8 +1,9 @@
 from django.shortcuts import render
-from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework import generics, status
 from rest_framework import viewsets, permissions
 from .models import Wallet, PersonalLimit, SystemLimit
-from .serializers import WalletSerializer, PersonalLimitSerializer
+from .serializers import WalletSerializer, PersonalLimitSerializer,SystemLimitSerializer
 
 class WalletViewSet(generics.RetrieveAPIView):
     serializer_class = WalletSerializer
@@ -41,3 +42,44 @@ class PersonalLimitView(generics.RetrieveUpdateAPIView):
                 monthly_limit=system_limit.monthly_limit
             )
             return limit
+class SystemLimitView(generics.RetrieveUpdateAPIView):
+    """
+    API endpoint for admins to view and update system limits.
+    Only accessible by admin users (staff or superuser).
+    """
+    serializer_class = SystemLimitSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        """Get the active system limit."""
+        system_limit = SystemLimit.objects.filter(is_active=True).first()
+        if not system_limit:
+            raise ValueError("No active system limit found. Please contact administrator.")
+        return system_limit
+    
+    def retrieve(self, request, *args, **kwargs):
+        """Get system limits (admin only)"""
+        if not (request.user.is_staff or request.user.is_superuser):
+            return Response(
+                {"error": "Only administrators can view system limits."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().retrieve(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        """Update system limits (admin only)"""
+        if not (request.user.is_staff or request.user.is_superuser):
+            return Response(
+                {"error": "Only administrators can update system limits."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().update(request, *args, **kwargs)
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Partially update system limits (admin only)"""
+        if not (request.user.is_staff or request.user.is_superuser):
+            return Response(
+                {"error": "Only administrators can update system limits."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return super().partial_update(request, *args, **kwargs)
